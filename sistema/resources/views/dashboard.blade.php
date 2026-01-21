@@ -37,7 +37,9 @@
                         </div>
                         <div class="flex justify-between items-center pt-2">
                             <span class="text-xs text-gray-400">Renovación: 15/12/2025</span>
-                            <button onclick="alert('Descargando contrato PDF...')" class="text-blue-600 text-sm font-semibold hover:underline">Ver Contrato</button>
+                            <button onclick="alert('SIMULACIÓN: Generando PDF del Contrato N° 58492...\n\nEste documento incluiría las cláusulas de cobertura rural y exclusiones.')" class="text-blue-600 text-sm font-semibold hover:underline">
+                                Ver Contrato
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -54,7 +56,7 @@
                             <span class="text-xs font-bold">Mis Pagos</span>
                         </button>
                     </div>
-                    <button onclick="alert('SOS ACTIVADO: Enviando ubicación a centro de salud más cercano...')" class="w-full mt-3 bg-red-50 text-red-600 font-bold py-2 rounded-lg border border-red-200 hover:bg-red-100 flex justify-center items-center gap-2">
+                    <button onclick="alert('SOS ACTIVADO: Geolocalización enviada al Centro Médico Rural más cercano (Lat: 13.69, Long: -89.22).')" class="w-full mt-3 bg-red-50 text-red-600 font-bold py-2 rounded-lg border border-red-200 hover:bg-red-100 flex justify-center items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                         BOTÓN DE PÁNICO
                     </button>
@@ -83,7 +85,6 @@
                         </li>
                     </ul>
                 </div>
-
             </div>
             
             <div class="bg-slate-800 rounded-xl p-8 shadow-xl text-white text-center sm:text-left sm:flex sm:justify-between sm:items-center">
@@ -91,7 +92,7 @@
                     <h4 class="font-bold text-xl text-white">¿Necesitas ayuda médica ahora?</h4>
                     <p class="text-slate-300 text-sm mt-1">Nuestro call center rural está disponible 24/7.</p>
                 </div>
-                <button class="mt-4 sm:mt-0 bg-white text-slate-900 font-bold py-3 px-8 rounded-full shadow hover:bg-gray-200 transition">
+                <button onclick="window.location.href='tel:*8426544'; alert('Iniciando llamada al call center Tiankii...');" class="mt-4 sm:mt-0 bg-white text-slate-900 font-bold py-3 px-8 rounded-full shadow hover:bg-gray-200 transition">
                     Llamar al *TIANKII
                 </button>
             </div>
