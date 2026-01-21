@@ -8,7 +8,19 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $user = Auth::user();
+    
+    $paciente = $user->paciente; 
+
+    $poliza = [
+        'plan' => 'Plan Salud Rural (Básico)',
+        'estado' => 'Activa',
+        'cobertura' => '$500.00',
+        'prima' => '$15.00/mes',
+        'proximo_pago' => '15 Dic 2025'
+    ];
+
+    return view('dashboard', compact('user', 'paciente', 'poliza'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
