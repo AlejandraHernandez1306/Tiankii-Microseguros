@@ -3,7 +3,7 @@
 use Illuminate\Support\Str;
 
 return [
-    // CAMBIO CRÍTICO: Forzamos 'file' ignorando el .env
+    // CAMBIO CRÍTICO: Forzamos 'file' para evitar problemas de base de datos en login
     'driver' => 'file', 
 
     'lifetime' => (int) env('SESSION_LIFETIME', 120),

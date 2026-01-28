@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Paciente;
-use App\Models\Poliza; // <--- ESTO FALTABA
+use App\Models\Poliza; // <--- VITAL: Importar el modelo
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,7 +34,7 @@ class RegisteredUserController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
-            // 1. Usuario
+            // 1. Crear Usuario
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -42,7 +42,7 @@ class RegisteredUserController extends Controller
                 'rol' => 'paciente',
             ]);
 
-            // 2. Paciente
+            // 2. Crear Ficha Médica
             Paciente::create([
                 'user_id' => $user->id,
                 'telefono' => $request->telefono,
@@ -50,7 +50,7 @@ class RegisteredUserController extends Controller
                 'ubicacion_zona' => $request->ubicacion_zona,
             ]);
 
-            // 3. Póliza (ESTO ES LO NUEVO)
+            // 3. Crear Póliza Automática (ESTO FALTABA EN TU CÓDIGO)
             Poliza::create([
                 'user_id' => $user->id,
                 'nombre_plan' => $request->ubicacion_zona === 'Rural' ? 'Plan Semilla Rural' : 'Plan Urbano Vital',
