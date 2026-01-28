@@ -15,11 +15,29 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+$user = \App\Models\User::factory()->create([
+    'name' => 'Alejandra Demo',
+    'email' => 'admin@tiankii.com',
+    'password' => bcrypt('password'),
+    'rol' => 'paciente'
+]);
+
+// Crea el perfil médico
+\App\Models\Paciente::create([
+    'user_id' => $user->id,
+    'telefono' => '7000-0000',
+    'fecha_nacimiento' => '2000-01-01',
+    'ubicacion_zona' => 'Rural'
+]);
+
+// Crea una póliza real en BD
+\App\Models\Poliza::create([
+    'user_id' => $user->id,
+    'nombre_plan' => 'Plan Semilla Rural',
+    'costo' => 15.00,
+    'cobertura' => 500.00,
+    'estado' => 'activa'
+]);
     }
 }

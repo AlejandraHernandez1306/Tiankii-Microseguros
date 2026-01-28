@@ -1,24 +1,18 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
-
-Route::get('/', function () {
-    return view('welcome');
-});
+use App\Models\Poliza;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/dashboard', function () {
     $user = Auth::user();
+    $paciente = $user->paciente;
     
-    $paciente = $user->paciente; 
-
-    $poliza = [
-        'plan' => 'Plan Salud Rural (Básico)',
-        'estado' => 'Activa',
-        'cobertura' => '$500.00',
-        'prima' => '$15.00/mes',
-        'proximo_pago' => '15 Dic 2025'
-    ];
+    $poliza = $user->polizas()->first() ?? new Poliza([
+        'nombre_plan' => 'Sin Plan Activo',
+        'costo' => 0,
+        'cobertura' => 0,
+        'estado' => 'pendiente'
+    ]);
 
     return view('dashboard', compact('user', 'paciente', 'poliza'));
 })->middleware(['auth', 'verified'])->name('dashboard');
