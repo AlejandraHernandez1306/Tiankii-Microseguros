@@ -40,4 +40,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::get('/prueba', function () {
+    try {
+        // Prueba de conexión y usuario
+        $user = Auth::user();
+        return "<h1>Sistema Tiankii Operativo</h1>" .
+               "<p>Usuario: " . ($user ? $user->name : 'No logueado') . "</p>" .
+               "<p>Base de Datos: Conectada</p>";
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
+
 require __DIR__.'/auth.php';

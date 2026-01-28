@@ -31,11 +31,11 @@
                     <div class="space-y-4">
                         <div class="flex justify-between border-b border-gray-100 pb-2">
                             <span class="text-gray-500 text-sm">Plan Contratado:</span>
-                            <span class="font-bold text-blue-900 text-right">{{ $poliza->nombre_plan }}</span>
+                            <span class="font-bold text-blue-900 text-right">{{ $poliza->nombre_plan ?? 'Plan Demo' }}</span>
                         </div>
                         <div class="flex justify-between border-b border-gray-100 pb-2">
                             <span class="text-gray-500 text-sm">Cobertura Disp.:</span>
-                            <span class="font-bold text-green-600 text-xl">${{ number_format($poliza->cobertura, 2) }}</span>
+                            <span class="font-bold text-green-600 text-xl">${{ number_format($poliza->cobertura ?? 0, 2) }}</span>
                         </div>
                         <div class="flex justify-between items-center pt-2">
                             <span class="text-xs text-gray-400">Renovación: 15/12/2025</span>
@@ -51,11 +51,11 @@
                     <div class="grid grid-cols-2 gap-3">
                         <button onclick="alert('Módulo de Citas: Conectando con agenda...')" class="flex flex-col items-center justify-center p-4 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition border border-blue-200">
                             <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            <span class="text-xs font-bold">Agendar Cita</span>
+                            <span class="text-xs font-bold">Agendar</span>
                         </button>
                         <button onclick="alert('Stripe Sandbox: Sin pagos pendientes.')" class="flex flex-col items-center justify-center p-4 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition border border-indigo-200">
                             <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-                            <span class="text-xs font-bold">Mis Pagos</span>
+                            <span class="text-xs font-bold">Pagos</span>
                         </button>
                     </div>
                     <button onclick="alert('SOS ACTIVADO: Enviando ubicación...')" class="w-full mt-3 bg-red-50 text-red-600 font-bold py-2 rounded-lg border border-red-200 hover:bg-red-100 flex justify-center items-center gap-2">
@@ -67,23 +67,17 @@
                 <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
                     <h4 class="text-lg font-bold text-slate-700 mb-4">Cobertura Incluida</h4>
                     <ul class="space-y-3">
-                        <li class="flex items-center text-sm text-gray-700">
-                            ✅ Consulta General (Ilimitada)
-                        </li>
-                        <li class="flex items-center text-sm text-gray-700">
-                            ✅ Exámenes Laboratorio (80%)
-                        </li>
-                        <li class="flex items-center text-sm text-gray-400 border-t pt-2">
-                            ❌ Cirugía Estética (No cubierto)
-                        </li>
+                        <li class="flex items-center text-sm text-gray-700">✅ Consulta General</li>
+                        <li class="flex items-center text-sm text-gray-700">✅ Exámenes Laboratorio</li>
+                        <li class="flex items-center text-sm text-gray-400 border-t pt-2">❌ Cirugía Estética</li>
                     </ul>
                 </div>
             </div>
             
             <div class="bg-slate-800 rounded-xl p-8 shadow-xl text-white text-center sm:text-left sm:flex sm:justify-between sm:items-center">
                 <div>
-                    <h4 class="font-bold text-xl text-white">¿Necesitas ayuda médica ahora?</h4>
-                    <p class="text-slate-300 text-sm mt-1">Call center rural disponible 24/7.</p>
+                    <h4 class="font-bold text-xl text-white">¿Ayuda Médica?</h4>
+                    <p class="text-slate-300 text-sm mt-1">Call center disponible 24/7.</p>
                 </div>
                 <button onclick="alert('Llamando...')" class="mt-4 sm:mt-0 bg-white text-slate-900 font-bold py-3 px-8 rounded-full shadow hover:bg-gray-200 transition">
                     Llamar al *TIANKII
