@@ -9,7 +9,9 @@ class Paciente extends Model
 {
     use HasFactory;
 
-    protected $guarded = []; // Permite asignación masiva de todo
+    // Desactiva la protección contra escritura masiva
+    // para que podamos guardar 'ubicacion_zona', 'telefono', etc.
+    protected $guarded = [];
 
     public function user()
     {

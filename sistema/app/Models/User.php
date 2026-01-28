@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -15,7 +14,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'rol', // Agregado
+        'rol', 
     ];
 
     protected $hidden = [
@@ -31,13 +30,13 @@ class User extends Authenticatable
         ];
     }
 
-    // Relación: Un Usuario tiene un perfil de Paciente
+    // RELACIÓN 1: Un usuario tiene UN perfil de paciente
     public function paciente()
     {
         return $this->hasOne(Paciente::class);
     }
 
-    // Relación Uno a Muchos (Requisito Técnico)
+    // RELACIÓN 2: Un usuario tiene MUCHAS pólizas (Requisito Técnico)
     public function polizas()
     {
         return $this->hasMany(Poliza::class);
