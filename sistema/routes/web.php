@@ -52,4 +52,21 @@ Route::get('/prueba', function () {
     }
 });
 
+// RUTA DE EMERGENCIA - SOLO PARA PRUEBAS
+Route::get('/debug', function () {
+    $user = Illuminate\Support\Facades\Auth::user();
+    if (!$user) {
+        return "<h1>ESTADO: NO LOGUEADO</h1><p>El usuario no ha iniciado sesión.</p>";
+    }
+    
+    // Intentar cargar la póliza
+    $poliza = $user->polizas()->first();
+    
+    return "<h1>ESTADO: LOGUEADO CON ÉXITO</h1>" .
+           "<h2>Usuario: " . $user->name . " (" . $user->rol . ")</h2>" .
+           "<h3>Datos de Póliza en Base de Datos:</h3>" .
+           "<pre>" . json_encode($poliza, JSON_PRETTY_PRINT) . "</pre>" .
+           "<br><a href='/dashboard'>Intentar ir al Dashboard</a>";
+});
+
 require __DIR__.'/auth.php';
