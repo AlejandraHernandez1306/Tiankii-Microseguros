@@ -31,12 +31,13 @@ class User extends Authenticatable
         ];
     }
 
-    // Relación con Paciente
+    // Relación: Un Usuario tiene un perfil de Paciente
     public function paciente()
     {
         return $this->hasOne(Paciente::class);
     }
 
+    // Relación: Un Usuario tiene muchas Pólizas
     public function polizas() {
     return $this->hasMany(Poliza::class);
 }

@@ -1,12 +1,15 @@
 <?php
 
-use App\Models\Poliza;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Poliza; // Asegúrate que esta línea esté arriba del todo
 
 Route::get('/dashboard', function () {
     $user = Auth::user();
-    $paciente = $user->paciente;
     
+    // 1. Obtener el paciente (si existe)
+    $paciente = $user->paciente; 
+
+    // 2. OBTENER LA PÓLIZA REAL DE LA BD
+    // Esto busca la primera póliza del usuario. Si no tiene, crea una vacía para que no de error.
     $poliza = $user->polizas()->first() ?? new Poliza([
         'nombre_plan' => 'Sin Plan Activo',
         'costo' => 0,
