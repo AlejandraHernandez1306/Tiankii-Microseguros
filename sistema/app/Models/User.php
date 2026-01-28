@@ -38,7 +38,8 @@ class User extends Authenticatable
     }
 
     // Relación: Un Usuario tiene muchas Pólizas
-    public function polizas() {
-    return $this->hasMany(Poliza::class);
-}
+    public function polizas() 
+    {
+        return $this->hasMany(Poliza::class);
+    }
 }

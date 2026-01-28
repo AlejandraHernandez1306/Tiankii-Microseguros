@@ -1,7 +1,6 @@
 <?php
 
-use App\Models\Poliza; // Asegúrate que esta línea esté arriba del todo
-
+use App\Models\Poliza; 
 Route::get('/dashboard', function () {
     $user = Auth::user();
     
