@@ -33,6 +33,16 @@ return new class extends Migration
             $table->string('estado')->default('activa'); // activa, pendiente, cancelada
             $table->timestamps();
         });
+
+        // Tabla para el Historial de Atenciones (Requisito Fase 3)
+        Schema::create('atenciones', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('paciente_user_id')->constrained('users'); // El paciente
+            $table->foreignId('medico_user_id')->constrained('users');   // El médico que atendió
+            $table->string('diagnostico');
+            $table->decimal('costo', 10, 2);
+            $table->timestamps();
+});
     }
 
     public function down(): void
