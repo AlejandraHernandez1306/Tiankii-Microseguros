@@ -37,8 +37,8 @@ class User extends Authenticatable
         return $this->hasOne(Paciente::class);
     }
 
-    // Relación: Un Usuario tiene muchas Pólizas
-    public function polizas() 
+    // Relación Uno a Muchos (Requisito Técnico)
+    public function polizas()
     {
         return $this->hasMany(Poliza::class);
     }
