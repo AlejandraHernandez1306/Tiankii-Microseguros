@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Paciente;
+use App\Models\Poliza; // <--- ESTO FALTABA
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\DB; // <--- OJO: Si falta esto, da error 500
+use Illuminate\Support\Facades\DB;
 
 class RegisteredUserController extends Controller
 {
@@ -33,6 +34,7 @@ class RegisteredUserController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
+            // 1. Usuario
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -40,11 +42,21 @@ class RegisteredUserController extends Controller
                 'rol' => 'paciente',
             ]);
 
+            // 2. Paciente
             Paciente::create([
                 'user_id' => $user->id,
                 'telefono' => $request->telefono,
                 'fecha_nacimiento' => $request->fecha_nacimiento,
                 'ubicacion_zona' => $request->ubicacion_zona,
+            ]);
+
+            // 3. Póliza (ESTO ES LO NUEVO)
+            Poliza::create([
+                'user_id' => $user->id,
+                'nombre_plan' => $request->ubicacion_zona === 'Rural' ? 'Plan Semilla Rural' : 'Plan Urbano Vital',
+                'costo' => $request->ubicacion_zona === 'Rural' ? 5.00 : 15.00,
+                'cobertura' => 500.00,
+                'estado' => 'activa'
             ]);
 
             event(new Registered($user));
