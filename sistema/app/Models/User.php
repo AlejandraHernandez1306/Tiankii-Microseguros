@@ -14,7 +14,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'rol', 
+        'rol', // <--- Permite guardar si es paciente o admin
     ];
 
     protected $hidden = [
@@ -30,13 +30,13 @@ class User extends Authenticatable
         ];
     }
 
-    // RELACIÓN 1: Un usuario tiene UN perfil de paciente
+    // RELACIÓN 1: Usuario -> Paciente
     public function paciente()
     {
         return $this->hasOne(Paciente::class);
     }
 
-    // RELACIÓN 2: Un usuario tiene MUCHAS pólizas (Requisito Técnico)
+    // RELACIÓN 2: Usuario -> Pólizas 
     public function polizas()
     {
         return $this->hasMany(Poliza::class);
