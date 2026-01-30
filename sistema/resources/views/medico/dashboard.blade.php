@@ -1,84 +1,71 @@
 <x-app-layout>
-    <style>
-        .panel-header { background-color: #0d9488; color: white; padding: 20px; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; align-items: center; }
-        .btn-cobrar { background-color: #0f766e; color: white; font-weight: bold; width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #115e59; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
-        .btn-cobrar:hover { background-color: #134e4a; }
-        .btn-aceptar { background-color: #22c55e; color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px; border: none; cursor: pointer; }
-        .btn-rechazar { background-color: #ef4444; color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px; border: none; cursor: pointer; }
-        .card-box { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    </style>
-
     <div class="py-12 bg-slate-50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
-                <div class="panel-header">
-                    <div>
-                        <h2 class="text-2xl font-bold">🏥 Panel Proveedor de Salud</h2>
-                        <p class="text-sm opacity-90">Clínica / Farmacia Adscrita</p>
-                    </div>
-                    <div class="bg-white text-teal-800 px-4 py-2 rounded-full font-bold text-sm">
-                        {{ Auth::user()->name }}
-                    </div>
+            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg border-t-4 border-teal-600 p-6 flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">👨‍⚕️ Panel Clínico</h2>
+                    <p class="text-teal-600 font-medium">Dr. {{ Auth::user()->name }} | Licencia #MED-2026</p>
+                </div>
+                <div class="bg-teal-100 text-teal-800 px-4 py-2 rounded-full font-bold text-sm">
+                    MODO ACTIVO
                 </div>
             </div>
 
             @if(session('success'))
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-sm">
-                    <strong>✅ Éxito:</strong> {{ session('success') }}
-                </div>
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded font-bold">✅ {{ session('success') }}</div>
             @endif
             @if(session('error'))
-                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-sm">
-                    <strong>❌ Error:</strong> {{ session('error') }}
-                </div>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded font-bold">❌ {{ session('error') }}</div>
             @endif
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
-                <div class="card-box">
-                    <h3 class="font-bold text-xl text-gray-700 mb-4 border-b pb-2">💊 Registrar Atención / Venta</h3>
-                    <p class="text-xs text-gray-500 mb-4">Ingrese los datos para descontar del saldo del paciente.</p>
-                    
+                <div class="bg-white p-6 rounded-lg shadow border border-gray-200">
+                    <h3 class="font-bold text-xl text-gray-700 mb-4 border-b pb-2">💊 Consulta y Receta Digital</h3>
                     <form action="{{ route('medico.registrar') }}" method="POST" class="space-y-4">
                         @csrf
                         <div>
-                            <label class="block text-sm font-bold text-gray-700">Correo del Paciente</label>
-                            <input type="email" name="email_paciente" class="w-full border-gray-300 rounded p-2" placeholder="paciente@tiankii.com" required>
+                            <label class="block text-sm font-bold text-gray-700">Paciente (Email)</label>
+                            <input type="email" name="email_paciente" class="w-full rounded border-gray-300" placeholder="paciente@tiankii.com" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700">Servicio o Medicamento</label>
-                            <input type="text" name="diagnostico" class="w-full border-gray-300 rounded p-2" placeholder="Ej: Amoxicilina / Consulta" required>
+                            <label class="block text-sm font-bold text-gray-700">Diagnóstico Médico</label>
+                            <input type="text" name="diagnostico" class="w-full rounded border-gray-300" placeholder="Ej: Infección Respiratoria" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700">Monto a Cobrar ($)</label>
-                            <input type="number" name="costo" step="0.01" class="w-full border-gray-300 rounded p-2 font-bold text-lg" placeholder="0.00" required>
+                            <label class="block text-sm font-bold text-gray-700">Receta / Tratamiento</label>
+                            <textarea name="receta" rows="3" class="w-full rounded border-gray-300" placeholder="Ej: Amoxicilina 500mg c/8h por 7 días..." required></textarea>
                         </div>
-                        
-                        <button type="submit" class="btn-cobrar">
-                            PROCESAR COBRO
-                        </button>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700">Costo ($)</label>
+                                <input type="number" name="costo" step="0.01" class="w-full rounded border-gray-300 font-bold" placeholder="0.00" required>
+                            </div>
+                            <div class="flex items-end">
+                                <button type="submit" class="w-full bg-teal-600 text-white font-bold py-2 rounded hover:bg-teal-700 shadow-lg">
+                                    CONFIRMAR Y COBRAR
+                                </button>
+                            </div>
+                        </div>
                     </form>
                 </div>
 
-                <div class="card-box">
-                    <h3 class="font-bold text-xl text-gray-700 mb-4 border-b pb-2">📅 Solicitudes Entrantes</h3>
-                    
-                    @if(rand(0,1)) <div class="flex justify-between items-center p-3 bg-blue-50 rounded border border-blue-100 mb-2">
-                        <div>
-                            <p class="font-bold text-sm">Nuevo Paciente (Rural)</p>
-                            <p class="text-xs text-gray-500">Solicitud: Medicamento Crónico</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="this.parentElement.parentElement.remove(); alert('✅ Solicitud Aprobada')" class="btn-aceptar">Aceptar</button>
-                            <button onclick="this.parentElement.parentElement.remove()" class="btn-rechazar">Rechazar</button>
-                        </div>
+                <div class="bg-white p-6 rounded-lg shadow border border-gray-200 opacity-90">
+                    <h3 class="font-bold text-xl text-gray-700 mb-4 border-b pb-2">📂 Expediente Reciente</h3>
+                    <p class="text-sm text-gray-500 mb-4">Último paciente atendido:</p>
+                    <div class="bg-gray-50 p-4 rounded border">
+                        <p><strong>Estado:</strong> Esperando nueva consulta...</p>
+                        <p class="text-xs text-gray-400 mt-2">El historial completo se actualiza al procesar el cobro.</p>
                     </div>
-                    @else
-                    <div class="p-4 text-center text-gray-400 italic border-dashed border-2 border-gray-200 rounded">
-                        No hay solicitudes pendientes en este momento.
+                    <div class="mt-6">
+                        <h4 class="font-bold text-sm text-gray-700">Inventario Rápido (Farmacia)</h4>
+                        <ul class="text-xs text-gray-600 list-disc list-inside mt-2">
+                            <li>Paracetamol 500mg (Disponible)</li>
+                            <li>Ibuprofeno 400mg (Bajo Stock)</li>
+                            <li>Antibióticos (Requiere Receta)</li>
+                        </ul>
                     </div>
-                    @endif
                 </div>
             </div>
         </div>
