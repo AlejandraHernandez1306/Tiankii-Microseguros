@@ -40,6 +40,7 @@ return new class extends Migration
             $table->foreignId('paciente_user_id')->constrained('users'); // El paciente
             $table->foreignId('medico_user_id')->constrained('users');   // El médico que atendió
             $table->string('diagnostico');
+            $table->text('receta')->nullable(); // Aquí se guarda la medicina
             $table->decimal('costo', 10, 2);
             $table->timestamps();
 });

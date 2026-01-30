@@ -11,7 +11,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// LÓGICA DE DIRECCIONAMIENTO (EL CEREBRO)
+// LÓGICA DE DIRECCIONAMIENTO DEL DASHBOARD
 Route::get('/dashboard', function () {
     $user = Auth::user();
 

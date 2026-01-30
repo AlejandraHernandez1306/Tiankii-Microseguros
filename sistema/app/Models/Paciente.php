@@ -1,20 +1,13 @@
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Paciente extends Model
-{
+class Paciente extends Model {
     use HasFactory;
+    
+    // PROTECCIÓN: Solo dejamos guardar estos campos
+    protected $fillable = ['user_id', 'telefono', 'fecha_nacimiento', 'ubicacion_zona'];
 
-    // Desactiva la protección contra escritura masiva
-    // para que podamos guardar 'ubicacion_zona', 'telefono', etc.
-    protected $guarded = [];
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
+    public function user() { return $this->belongsTo(User::class); }
 }

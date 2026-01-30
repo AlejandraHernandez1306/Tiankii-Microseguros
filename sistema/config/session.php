@@ -3,7 +3,7 @@
 use Illuminate\Support\Str;
 
 return [
-    'driver' => 'file', // ESTO ES LA CLAVE. No lo cambies a database.
+    'driver' => 'file', 
     'lifetime' => 120,
     'expire_on_close' => false,
     'encrypt' => false,
