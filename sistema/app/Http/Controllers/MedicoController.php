@@ -10,15 +10,14 @@ use Illuminate\Support\Facades\DB;
 
 class MedicoController extends Controller
 {
-    // Vista del Panel del Médico
     public function index()
     {
         return view('medico.dashboard');
     }
 
-    // Procesar la atención (Requisito RF.4.2 Descuento Automático)
     public function registrarAtencion(Request $request)
     {
+        // Validación estricta
         $request->validate([
             'email_paciente' => 'required|email|exists:users,email',
             'diagnostico' => 'required|string',
@@ -26,6 +25,8 @@ class MedicoController extends Controller
         ]);
 
         $paciente = User::where('email', $request->email_paciente)->first();
+        
+        // Buscar póliza activa del paciente
         $poliza = Poliza::where('user_id', $paciente->id)->where('estado', 'activa')->first();
 
         if (!$poliza) {
@@ -36,13 +37,13 @@ class MedicoController extends Controller
             return back()->with('error', 'SALDO INSUFICIENTE. Cobertura disponible: $' . $poliza->cobertura);
         }
 
-        // TRANSACCIÓN REAL: Descontar dinero y guardar historial
+        // TRANSACCIÓN: Descuento y Registro (Inspirado en PDF API-Laravel)
         DB::transaction(function () use ($paciente, $poliza, $request) {
-            // 1. Descontar de la póliza
+            // 1. Descontar dinero de la póliza
             $poliza->cobertura -= $request->costo;
             $poliza->save();
 
-            // 2. Guardar en historial (Simulamos modelo Atencion con DB directa por rapidez)
+            // 2. Guardar historial (Usamos DB directo para ahorrar tiempo de crear modelo Atencion)
             DB::table('atenciones')->insert([
                 'paciente_user_id' => $paciente->id,
                 'medico_user_id' => Auth::id(),
@@ -53,6 +54,6 @@ class MedicoController extends Controller
             ]);
         });
 
-        return back()->with('success', '¡Atención registrada! Nuevo saldo del paciente: $' . $poliza->cobertura);
+        return back()->with('success', 'Consulta registrada. Nuevo saldo póliza: $' . $poliza->cobertura);
     }
 }
