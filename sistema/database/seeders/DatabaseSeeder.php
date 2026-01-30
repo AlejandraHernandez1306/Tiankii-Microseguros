@@ -12,7 +12,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. USUARIO PACIENTE (Para demostrar el Dashboard)
+        // 1. DEMO PACIENTE: "Alejandra"
+        // Este usuario tendrá saldo, póliza y datos listos.
         $paciente = User::create([
             'name' => 'Alejandra Paciente',
             'email' => 'paciente@tiankii.com',
@@ -20,13 +21,15 @@ class DatabaseSeeder extends Seeder
             'rol' => 'paciente',
         ]);
         
+        // Crear su ficha médica
         Paciente::create([
             'user_id' => $paciente->id,
-            'telefono' => '7777-7777',
-            'fecha_nacimiento' => '2000-01-01',
+            'telefono' => '7000-0001',
+            'fecha_nacimiento' => '1995-05-20',
             'ubicacion_zona' => 'Rural',
         ]);
 
+        // Crear su póliza con $500 de saldo
         Poliza::create([
             'user_id' => $paciente->id,
             'nombre_plan' => 'Plan Semilla Rural',
@@ -35,7 +38,8 @@ class DatabaseSeeder extends Seeder
             'estado' => 'activa'
         ]);
 
-        // 2. USUARIO MÉDICO (Para demostrar Aceptar/Rechazar y Cobros)
+        // 2. DEMO MÉDICO: "Dr. Tiankii"
+        // Este usuario verá el panel verde de doctores.
         User::create([
             'name' => 'Dr. Especialista',
             'email' => 'medico@tiankii.com',
@@ -43,9 +47,10 @@ class DatabaseSeeder extends Seeder
             'rol' => 'medico',
         ]);
 
-        // 3. USUARIO ADMIN (Tercer Rol)
+        // 3. DEMO ADMIN: "Super Usuario"
+        // Este usuario verá el control total (o mensaje de construcción).
         User::create([
-            'name' => 'Administrador Tiankii',
+            'name' => 'Admin Tiankii',
             'email' => 'admin@tiankii.com',
             'password' => Hash::make('password'),
             'rol' => 'admin',
