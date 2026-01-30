@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Paciente;
-use App\Models\Poliza; // <--- VITAL: Importar el modelo
+use App\Models\Poliza;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,17 +13,26 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\DB; // Necesario para transacciones
 
 class RegisteredUserController extends Controller
 {
+    /**
+     * Display the registration view.
+     */
     public function create(): View
     {
         return view('auth.register');
     }
 
+    /**
+     * Handle an incoming registration request.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function store(Request $request): RedirectResponse
     {
+        // 1. Validamos los datos del formulario
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
@@ -33,8 +42,10 @@ class RegisteredUserController extends Controller
             'ubicacion_zona' => ['required', 'in:Rural,Urbana'],
         ]);
 
+        // 2. Usamos una transacción para asegurar que se cree todo o nada
         DB::transaction(function () use ($request) {
-            // 1. Crear Usuario
+            
+            // A. Crear el Usuario (Login)
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -42,7 +53,7 @@ class RegisteredUserController extends Controller
                 'rol' => 'paciente',
             ]);
 
-            // 2. Crear Ficha Médica
+            // B. Crear el Perfil del Paciente
             Paciente::create([
                 'user_id' => $user->id,
                 'telefono' => $request->telefono,
@@ -50,19 +61,26 @@ class RegisteredUserController extends Controller
                 'ubicacion_zona' => $request->ubicacion_zona,
             ]);
 
-            // 3. Crear Póliza Automática (ESTO FALTABA EN TU CÓDIGO)
+            // C. Asignar la Póliza Automática (Lógica de Negocio del PDF)
+            // Si es Rural, el costo es subsidiado ($5). Si es Urbana, costo pleno ($15).
+            $plan = $request->ubicacion_zona === 'Rural' ? 'Plan Semilla Rural' : 'Plan Salud Urbana';
+            $costo = $request->ubicacion_zona === 'Rural' ? 5.00 : 15.00;
+
             Poliza::create([
                 'user_id' => $user->id,
-                'nombre_plan' => $request->ubicacion_zona === 'Rural' ? 'Plan Semilla Rural' : 'Plan Urbano Vital',
-                'costo' => $request->ubicacion_zona === 'Rural' ? 5.00 : 15.00,
-                'cobertura' => 500.00,
+                'nombre_plan' => $plan,
+                'costo' => $costo,
+                'cobertura' => 500.00, // Cobertura inicial estándar
                 'estado' => 'activa'
             ]);
 
             event(new Registered($user));
+
+            // D. Iniciar sesión automáticamente
             Auth::login($user);
         });
 
+        // 3. Redirigir al Dashboard
         return redirect(route('dashboard', absolute: false));
     }
 }
