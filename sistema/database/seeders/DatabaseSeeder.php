@@ -3,41 +3,52 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Paciente;
+use App\Models\Poliza;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
+        // 1. USUARIO PACIENTE (Para demostrar el Dashboard)
+        $paciente = User::create([
+            'name' => 'Alejandra Paciente',
+            'email' => 'paciente@tiankii.com',
+            'password' => Hash::make('password'),
+            'rol' => 'paciente',
+        ]);
+        
+        Paciente::create([
+            'user_id' => $paciente->id,
+            'telefono' => '7777-7777',
+            'fecha_nacimiento' => '2000-01-01',
+            'ubicacion_zona' => 'Rural',
+        ]);
 
-$user = \App\Models\User::factory()->create([
-    'name' => 'Alejandra Demo',
-    'email' => 'admin@tiankii.com',
-    'password' => bcrypt('password'),
-    'rol' => 'paciente'
-]);
+        Poliza::create([
+            'user_id' => $paciente->id,
+            'nombre_plan' => 'Plan Semilla Rural',
+            'costo' => 5.00,
+            'cobertura' => 500.00,
+            'estado' => 'activa'
+        ]);
 
-// Crea el perfil médico
-\App\Models\Paciente::create([
-    'user_id' => $user->id,
-    'telefono' => '7000-0000',
-    'fecha_nacimiento' => '2000-01-01',
-    'ubicacion_zona' => 'Rural'
-]);
+        // 2. USUARIO MÉDICO (Para demostrar Aceptar/Rechazar y Cobros)
+        User::create([
+            'name' => 'Dr. Especialista',
+            'email' => 'medico@tiankii.com',
+            'password' => Hash::make('password'),
+            'rol' => 'medico',
+        ]);
 
-// Crea una póliza real en BD
-\App\Models\Poliza::create([
-    'user_id' => $user->id,
-    'nombre_plan' => 'Plan Semilla Rural',
-    'costo' => 15.00,
-    'cobertura' => 500.00,
-    'estado' => 'activa'
-]);
+        // 3. USUARIO ADMIN (Tercer Rol)
+        User::create([
+            'name' => 'Administrador Tiankii',
+            'email' => 'admin@tiankii.com',
+            'password' => Hash::make('password'),
+            'rol' => 'admin',
+        ]);
     }
 }
