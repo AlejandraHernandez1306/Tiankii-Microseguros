@@ -34,15 +34,15 @@ class RegisteredUserController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
-            // 1. Usuario Base
+            // 1. Usuario
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'rol' => 'paciente',
+                'rol' => 'paciente', // Rol por defecto
             ]);
 
-            // 2. Perfil Médico (Fase 3: Datos de Salud)
+            // 2. Paciente
             Paciente::create([
                 'user_id' => $user->id,
                 'telefono' => $request->telefono,
@@ -50,13 +50,11 @@ class RegisteredUserController extends Controller
                 'ubicacion_zona' => $request->ubicacion_zona,
             ]);
 
-            // 3. Generación de Póliza (Fase 2: Core Financiero)
-            // Lógica: Rural paga menos ($5), Urbana paga estándar ($15)
+            // 3. Póliza Automática
             $esRural = $request->ubicacion_zona === 'Rural';
-            
             Poliza::create([
                 'user_id' => $user->id,
-                'nombre_plan' => $esRural ? 'Plan Semilla (Subvencionado)' : 'Plan Urbano Total',
+                'nombre_plan' => $esRural ? 'Plan Semilla Rural' : 'Plan Urbano Total',
                 'costo' => $esRural ? 5.00 : 15.00,
                 'cobertura' => 500.00,
                 'estado' => 'activa'

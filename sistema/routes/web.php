@@ -7,31 +7,30 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
-// Página de inicio (Landing Page)
 Route::get('/', function () {
     return view('welcome');
 });
 
-// LOGIN REDIRECTOR (El cerebro)
+// LÓGICA DE DIRECCIONAMIENTO (EL CEREBRO)
 Route::get('/dashboard', function () {
     $user = Auth::user();
 
-    // ESCENARIO 1: ES MÉDICO
+    // 1. Si es MÉDICO -> Mándalo a su carpeta especial
     if ($user->rol === 'medico') {
         return redirect()->route('medico.panel');
     }
 
-    // ESCENARIO 2: ES ADMIN
+    // 2. Si es ADMIN -> Mándalo a su carpeta (o vista simple)
     if ($user->rol === 'admin') {
-        return view('admin.dashboard'); // Crearemos esta vista simple abajo
+        return view('admin.dashboard');
     }
 
-    // ESCENARIO 3: ES PACIENTE (Por defecto)
-    // Carga datos vitales para que no dé error
+    // 3. Si es PACIENTE -> Carga sus datos y muestra su dashboard
     $paciente = $user->paciente;
+    // Prevenir error si no tiene póliza (para usuarios nuevos)
     $poliza = $user->polizas()->where('estado', 'activa')->first();
     
-    // Historial clínico (Fase 3)
+    // Historial
     $historial = DB::table('atenciones')
                     ->where('paciente_user_id', $user->id)
                     ->orderBy('created_at', 'desc')
@@ -40,24 +39,29 @@ Route::get('/dashboard', function () {
     return view('dashboard', compact('user', 'paciente', 'poliza', 'historial'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// RUTAS EXCLUSIVAS DE MÉDICO
+// RUTA DEL CONTRATO (Solo pacientes)
+Route::get('/contrato', function () {
+    $user = Auth::user();
+    if($user->rol !== 'paciente') return redirect('/dashboard');
+    
+    return view('contract', [
+        'user' => $user, 
+        'paciente' => $user->paciente, 
+        'poliza' => $user->polizas->first()
+    ]);
+})->middleware(['auth'])->name('contrato');
+
+// RUTAS DEL MÉDICO
 Route::middleware('auth')->group(function () {
     Route::get('/medico', [MedicoController::class, 'index'])->name('medico.panel');
     Route::post('/medico/registrar', [MedicoController::class, 'registrarAtencion'])->name('medico.registrar');
 });
 
-// RUTAS DE PERFIL (Laravel Breeze Default)
+// RUTAS DE PERFIL
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-// RUTA CONTRATO (Extra)
-Route::get('/contrato', function () {
-    $user = Auth::user();
-    if($user->rol !== 'paciente') return redirect('/dashboard');
-    return view('contract', ['user' => $user, 'paciente' => $user->paciente, 'poliza' => $user->polizas->first()]);
-})->middleware(['auth']);
 
 require __DIR__.'/auth.php';
