@@ -13,26 +13,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\DB; // Necesario para transacciones
+use Illuminate\Support\Facades\DB;
 
 class RegisteredUserController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
     public function create(): View
     {
         return view('auth.register');
     }
 
-    /**
-     * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     */
     public function store(Request $request): RedirectResponse
     {
-        // 1. Validamos los datos del formulario
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
@@ -42,10 +33,8 @@ class RegisteredUserController extends Controller
             'ubicacion_zona' => ['required', 'in:Rural,Urbana'],
         ]);
 
-        // 2. Usamos una transacción para asegurar que se cree todo o nada
         DB::transaction(function () use ($request) {
-            
-            // A. Crear el Usuario (Login)
+            // 1. Usuario Base
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -53,7 +42,7 @@ class RegisteredUserController extends Controller
                 'rol' => 'paciente',
             ]);
 
-            // B. Crear el Perfil del Paciente
+            // 2. Perfil Médico (Fase 3: Datos de Salud)
             Paciente::create([
                 'user_id' => $user->id,
                 'telefono' => $request->telefono,
@@ -61,26 +50,22 @@ class RegisteredUserController extends Controller
                 'ubicacion_zona' => $request->ubicacion_zona,
             ]);
 
-            // C. Asignar la Póliza Automática (Lógica de Negocio del PDF)
-            // Si es Rural, el costo es subsidiado ($5). Si es Urbana, costo pleno ($15).
-            $plan = $request->ubicacion_zona === 'Rural' ? 'Plan Semilla Rural' : 'Plan Salud Urbana';
-            $costo = $request->ubicacion_zona === 'Rural' ? 5.00 : 15.00;
-
+            // 3. Generación de Póliza (Fase 2: Core Financiero)
+            // Lógica: Rural paga menos ($5), Urbana paga estándar ($15)
+            $esRural = $request->ubicacion_zona === 'Rural';
+            
             Poliza::create([
                 'user_id' => $user->id,
-                'nombre_plan' => $plan,
-                'costo' => $costo,
-                'cobertura' => 500.00, // Cobertura inicial estándar
+                'nombre_plan' => $esRural ? 'Plan Semilla (Subvencionado)' : 'Plan Urbano Total',
+                'costo' => $esRural ? 5.00 : 15.00,
+                'cobertura' => 500.00,
                 'estado' => 'activa'
             ]);
 
             event(new Registered($user));
-
-            // D. Iniciar sesión automáticamente
             Auth::login($user);
         });
 
-        // 3. Redirigir al Dashboard
         return redirect(route('dashboard', absolute: false));
     }
 }
