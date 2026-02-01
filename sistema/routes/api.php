@@ -36,5 +36,6 @@ Route::get('/consulta-poliza', function (Request $request) {
         'cobertura_restante' => $poliza->cobertura,
         'status' => 'ACTIVO',
         'mensaje' => 'Listo para atención médica (Fase 3)'
+        //todavia falta
     ]);
 });
