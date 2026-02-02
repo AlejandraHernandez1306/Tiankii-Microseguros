@@ -14,7 +14,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'rol', // <--- ESTO ES INDISPENSABLE
+        'rol', // <--- ¡ESTO ES INDISPENSABLE! SI FALTA, NO GUARDA EL ROL
     ];
 
     protected $hidden = [
@@ -30,13 +30,16 @@ class User extends Authenticatable
         ];
     }
 
-    public function paciente()
-    {
+    // Relaciones
+    public function paciente() {
         return $this->hasOne(Paciente::class);
     }
 
-    public function polizas()
-    {
+    public function polizas() {
         return $this->hasMany(Poliza::class);
+    }
+    
+    public function atenciones() {
+        return $this->hasMany(Atencion::class, 'paciente_user_id');
     }
 }

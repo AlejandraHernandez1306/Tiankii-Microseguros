@@ -24,17 +24,16 @@ class RegisteredUserController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        // 1. VALIDAMOS DATOS COMUNES + ROL
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed'],
-            'rol' => ['required', 'in:paciente,medico'],
+            'rol' => ['required', 'in:paciente,medico'], // Validación estricta
         ]);
 
         DB::transaction(function () use ($request) {
             
-            // 2. CREAMOS EL USUARIO MAESTRO
+            // 1. Crear Usuario
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -42,23 +41,23 @@ class RegisteredUserController extends Controller
                 'rol' => $request->rol,
             ]);
 
-            // 3. SI ES PACIENTE -> CREAMOS SU SEGURO
+            // 2. Si es Paciente, crear perfil médico y póliza
             if ($request->rol === 'paciente') {
                 
-                // Si el usuario no llenó algo, ponemos valores por defecto para que NO TRUENE
+                // Valores de seguridad por si el formulario falla en enviar algún dato
                 $fecha = $request->fecha_nacimiento ?? '2000-01-01';
                 $zona = $request->ubicacion_zona ?? 'Bajo Riesgo';
-                $dui = $request->dui ?? 'PENDIENTE-'.rand(1000,9999);
+                $dui = $request->dui ?? 'PENDIENTE-' . time();
 
                 Paciente::create([
                     'user_id' => $user->id,
                     'dui' => $dui,
-                    'telefono' => $request->telefono ?? '0000-0000',
+                    'telefono' => $request->telefono ?? 'Sin numero',
                     'fecha_nacimiento' => $fecha,
                     'ubicacion_zona' => $zona,
                 ]);
 
-                // Lógica de Cobro
+                // Crear Póliza
                 $prima = 50.00;
                 $edad = Carbon::parse($fecha)->age;
                 if ($edad > 40) $prima += ($edad - 40);
@@ -72,13 +71,11 @@ class RegisteredUserController extends Controller
                     'estado' => 'activa'
                 ]);
             }
-            
-            // 4. LOGIN AUTOMÁTICO
+
             event(new Registered($user));
             Auth::login($user);
         });
 
-        // 5. ENVIAR AL DASHBOARD
         return redirect(route('dashboard', absolute: false));
     }
 }
