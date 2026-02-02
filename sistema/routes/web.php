@@ -1,104 +1,112 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\MedicoController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 
+// 1. PÁGINA DE INICIO
 Route::get('/', function () {
     return view('welcome');
 });
 
-// DASHBOARD
+// 2. DASHBOARD INTELIGENTE (Redirección por Rol)
 Route::get('/dashboard', function () {
     $user = Auth::user();
-
-    if ($user->rol === 'medico') {
-        return redirect()->route('medico.panel');
-    }
+    
     if ($user->rol === 'admin') {
-        return view('admin.dashboard');
+        return view('admin.dashboard', compact('user')); 
+    } 
+    elseif ($user->rol === 'medico') {
+        return view('medico.dashboard', compact('user'));
+    } 
+    else {
+        return view('dashboard', compact('user'));
     }
-
-    $paciente = $user->paciente;
-    $poliza = $user->polizas()->where('estado', 'activa')->first();
-    $historial = DB::table('atenciones')->where('paciente_user_id', $user->id)->orderByDesc('created_at')->get();
-
-    return view('dashboard', compact('user', 'paciente', 'poliza', 'historial'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// CONTRATO
-Route::get('/contrato', function () {
-    $user = Auth::user();
-    if($user->rol !== 'paciente') return redirect('/dashboard');
-    return view('contract', ['user' => $user, 'paciente' => $user->paciente, 'poliza' => $user->polizas->first()]);
-})->middleware(['auth'])->name('contrato');
+// 3. RUTAS DE AUTENTICACIÓN (Login, Register, Logout)
+require __DIR__.'/auth.php';
 
-// MÉDICO
-Route::middleware('auth')->group(function () {
-    Route::get('/medico', [MedicoController::class, 'index'])->name('medico.panel');
-    Route::post('/medico/registrar', [MedicoController::class, 'registrarAtencion'])->name('medico.registrar');
-});
-
-// PERFIL
+// 4. RUTAS DE PERFIL (¡ESTAS FALTABAN Y CAUSABAN EL ERROR!)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
-
-Route::get('/api/usuario/{id}', function($id) {
-    return \App\Models\User::with('polizas')->find($id);
-});
-
-// RUTA DE EDICIÓN DE USUARIOS (SOLO ADMIN)
+// 5. RUTAS DE ADMIN
 Route::middleware(['auth'])->group(function () {
+    // Editar Usuario
     Route::get('/admin/editar/{id}', function ($id) {
         if (Auth::user()->rol !== 'admin') return redirect('/dashboard');
-        $usuario = \App\Models\User::with('paciente')->findOrFail($id);
+        $usuario = User::with('paciente')->findOrFail($id);
         return view('admin.edit', compact('usuario'));
     })->name('admin.edit');
 
     Route::post('/admin/editar/{id}', function (\Illuminate\Http\Request $request, $id) {
         if (Auth::user()->rol !== 'admin') return redirect('/dashboard');
-        $usuario = \App\Models\User::findOrFail($id);
-        
+        $usuario = User::findOrFail($id);
         $usuario->update([
             'name' => $request->name,
             'email' => $request->email,
             'rol' => $request->rol
         ]);
-
-        // Si es paciente y cambiamos su zona, actualizamos también
         if ($usuario->paciente && $request->has('ubicacion_zona')) {
             $usuario->paciente->update(['ubicacion_zona' => $request->ubicacion_zona]);
         }
-
-        return redirect('/dashboard')->with('success', 'Usuario actualizado con autoridad.');
+        return redirect('/dashboard');
     })->name('admin.update');
+
+    // Eliminar Usuario
+    Route::delete('/admin/eliminar/{id}', function ($id) {
+        if (Auth::user()->rol !== 'admin') return redirect('/dashboard');
+        User::destroy($id);
+        return back();
+    })->name('admin.destroy');
 });
 
-// RUTAS MÉDICO AVANZADO
+// 6. RUTAS DE MÉDICO
 Route::middleware(['auth'])->group(function () {
+    // Registrar Consulta (La que daba error antes)
+    Route::post('/medico/registrar-consulta', function (\Illuminate\Http\Request $request) {
+        if (Auth::user()->rol !== 'medico') return abort(403);
+        
+        $request->validate(['email_paciente' => 'required|exists:users,email']);
+        $paciente = User::where('email', $request->email_paciente)->first();
+
+        \App\Models\Atencion::create([
+            'paciente_user_id' => $paciente->id,
+            'medico_user_id' => Auth::id(),
+            'diagnostico' => $request->diagnostico,
+            'receta' => $request->receta,
+            'costo_total' => $request->costo,
+            'monto_cubierto' => $request->costo * 0.8,
+            'copago_paciente' => $request->costo * 0.2
+        ]);
+        return back()->with('success', 'Consulta registrada');
+    })->name('medico.registrar');
+
     // Ver Historial
     Route::get('/medico/paciente/{id}', function ($id) {
         if (Auth::user()->rol !== 'medico') return redirect('/dashboard');
-        $paciente = \App\Models\User::with(['paciente', 'polizas', 'atenciones'])->findOrFail($id);
+        $paciente = User::with(['paciente', 'polizas', 'atenciones'])->findOrFail($id);
         return view('medico.historial', compact('paciente'));
-    })->name('medico.ver_historial');
+    })->name('medico.ver_historial'); // Nombre corregido para coincidir con tu vista
 
-    // Cambiar Estado Póliza (Activo/Inactivo)
+    // Activar Póliza
     Route::post('/medico/toggle-poliza/{id}', function ($id) {
         if (Auth::user()->rol !== 'medico') return abort(403);
         $poliza = \App\Models\Poliza::where('user_id', $id)->first();
-        if ($poliza) {
+        if($poliza) {
             $poliza->estado = ($poliza->estado === 'activa') ? 'cancelada' : 'activa';
             $poliza->save();
         }
-        return back()->with('success', 'Estado de la póliza actualizado.');
+        return back();
     })->name('medico.toggle_poliza');
+});
+
+// 7. API
+Route::get('/api/paciente/{id}', function ($id) {
+    return User::with('paciente', 'polizas')->find($id);
 });

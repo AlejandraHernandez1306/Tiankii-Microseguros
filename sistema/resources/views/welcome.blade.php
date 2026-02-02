@@ -3,52 +3,68 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tiankii - Microseguros</title>
+    <title>Tiankii - Salud Rural</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="bg-gray-100">
-    <div class="relative flex items-top justify-center min-h-screen bg-gray-100 dark:bg-gray-900 sm:items-center py-4 sm:pt-0">
-        
-        <div class="fixed top-0 right-0 px-6 py-4 sm:block z-50">
-            @auth
-                <a href="{{ url('/dashboard') }}" class="text-sm text-gray-700 dark:text-gray-500 underline font-bold">Ir al Panel Principal</a>
-                <form method="POST" action="{{ route('logout') }}" class="inline ml-4">
-                    @csrf
-                    <button type="submit" class="text-sm text-red-600 underline cursor-pointer">Cerrar Sesión</button>
-                </form>
-            @else
-                <a href="{{ route('login') }}" class="text-sm text-gray-700 dark:text-gray-500 underline font-bold">Iniciar Sesión</a>
-                @if (Route::has('register'))
-                    <a href="{{ route('register') }}" class="ml-4 text-sm text-gray-700 dark:text-gray-500 underline font-bold">Registrarse</a>
-                @endif
-            @endauth
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+
+    <nav class="bg-white shadow-md p-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-3xl">🏥</span>
+                <span class="text-2xl font-black text-blue-900 tracking-tighter">TIANKII</span>
+            </div>
+            <div class="space-x-4">
+                @auth
+                    <a href="{{ url('/dashboard') }}" class="font-bold text-blue-700 hover:text-blue-900">Ir al Panel</a>
+                @else
+                    <a href="{{ route('login') }}" class="font-bold text-gray-600 hover:text-blue-600">Iniciar Sesión</a>
+                    <a href="{{ route('register') }}" class="bg-blue-600 text-white px-5 py-2 rounded-full font-bold hover:bg-blue-700 transition">Afiliarse</a>
+                @endauth
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-6 py-16 flex flex-col md:flex-row items-center gap-12">
+        <div class="md:w-1/2 space-y-6">
+            <h1 class="text-5xl font-black text-gray-900 leading-tight">
+                Salud accesible <br> <span class="text-blue-600">donde estés.</span>
+            </h1>
+            <p class="text-xl text-gray-600">
+                Microseguros diseñados para zonas rurales. Sin trámites complejos. 
+                Paga solo lo justo según tu edad y ubicación.
+            </p>
+            <div class="flex gap-4 pt-4">
+                @auth
+                    <a href="{{ url('/dashboard') }}" class="px-8 py-4 bg-blue-600 text-white rounded-lg font-bold shadow-lg hover:bg-blue-700 transition">
+                        Entrar a mi Cuenta
+                    </a>
+                @else
+                    <a href="{{ route('register') }}" class="px-8 py-4 bg-blue-600 text-white rounded-lg font-bold shadow-lg hover:bg-blue-700 transition">
+                        Comenzar Ahora
+                    </a>
+                    <a href="{{ route('login') }}" class="px-8 py-4 bg-white text-blue-600 border border-blue-200 rounded-lg font-bold shadow-sm hover:bg-gray-50 transition">
+                        Soy Médico
+                    </a>
+                @endauth
+            </div>
         </div>
 
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 text-center">
-            <div class="flex justify-center pt-8 sm:justify-start sm:pt-0">
-                <h1 class="text-6xl font-black text-blue-900 tracking-tighter">TIANKII</h1>
+        <div class="md:w-1/2 grid gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow-xl border-l-8 border-green-500">
+                <div class="text-green-600 font-bold mb-2">PLAN BÁSICO</div>
+                <div class="text-3xl font-black text-gray-800">$50.00 <span class="text-sm font-normal text-gray-500">/ año</span></div>
+                <p class="text-gray-500 mt-2">Cobertura esencial para zonas de bajo riesgo.</p>
             </div>
-            <p class="mt-4 text-xl text-gray-600">Microseguros de Salud y Pagos Digitales para Zonas Rurales</p>
-            
-            <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="p-6 bg-white rounded-lg shadow-lg border-l-4 border-blue-600">
-                    <h3 class="font-bold text-lg">Soy Paciente</h3>
-                    <p class="text-sm text-gray-500 mb-4">Consulta tu saldo, historial y cobertura.</p>
-                    @auth
-                        <a href="{{ url('/dashboard') }}" class="block w-full bg-blue-600 text-white py-2 rounded font-bold">Ir a mi Panel</a>
-                    @else
-                        <a href="{{ route('login') }}" class="block w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700">Entrar</a>
-                        <a href="{{ route('register') }}" class="block w-full mt-2 text-blue-600 text-sm underline">Crear cuenta nueva</a>
-                    @endauth
-                </div>
-
-                <div class="p-6 bg-white rounded-lg shadow-lg border-l-4 border-teal-600">
-                    <h3 class="font-bold text-lg">Soy Médico / Admin</h3>
-                    <p class="text-sm text-gray-500 mb-4">Gestión de consultas y administración.</p>
-                    <a href="{{ route('login') }}" class="block w-full bg-teal-600 text-white py-2 rounded font-bold hover:bg-teal-700">Acceso Profesional</a>
-                </div>
+            <div class="bg-white p-6 rounded-2xl shadow-xl border-l-8 border-orange-500 opacity-90">
+                <div class="text-orange-600 font-bold mb-2">PLAN RURAL PLUS</div>
+                <div class="text-3xl font-black text-gray-800">$60.00 <span class="text-sm font-normal text-gray-500">/ año</span></div>
+                <p class="text-gray-500 mt-2">Cobertura ampliada para zonas de alto riesgo.</p>
             </div>
         </div>
     </div>
+
 </body>
 </html>

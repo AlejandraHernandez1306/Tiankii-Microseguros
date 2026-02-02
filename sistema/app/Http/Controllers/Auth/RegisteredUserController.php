@@ -24,37 +24,41 @@ class RegisteredUserController extends Controller
         return view('auth.register');
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        // 1. VALIDACIÓN MANUAL (Para que veas el error si falla)
-        $validator = Validator::make($request->all(), [
+        // 1. VALIDACIÓN GENERAL (Nombre, Email, Pass)
+        $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'dui' => ['required', 'string'], // Si esto falta en el HTML, aquí tronará
-            'telefono' => ['required', 'string'],
-            'fecha_nacimiento' => ['required', 'date'],
-            'ubicacion_zona' => ['required'],
+            'rol' => ['required', 'in:paciente,medico'], // Validamos que el rol sea válido
         ]);
 
-        if ($validator->fails()) {
-            // ESTO TE MOSTRARÁ EL ERROR EN PANTALLA NEGRA
-            dd('ERROR DE VALIDACIÓN (Faltan datos en el form):', $validator->errors()->all());
+        // 2. VALIDACIÓN ESPECÍFICA (Dependiendo del Rol)
+        if ($request->rol === 'paciente') {
+            $request->validate([
+                'dui' => ['required', 'string'],
+                'telefono' => ['required'],
+                'fecha_nacimiento' => ['required', 'date'],
+            ]);
+        } elseif ($request->rol === 'medico') {
+            $request->validate([
+                'jvpm' => ['required', 'string'], // Validación especial para médico
+            ]);
         }
 
-        // 2. LÓGICA DE NEGOCIO Y BD
-        try {
-            DB::transaction(function () use ($request) {
-                
-                // A. Crear Usuario (Encriptación Hash::make)
-                $user = User::create([
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'password' => Hash::make($request->password),
-                    'rol' => 'paciente',
-                ]);
+        DB::transaction(function () use ($request) {
+            
+            // A. CREAR USUARIO MAESTRO
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'rol' => $request->rol, // Guardamos si es médico o paciente
+            ]);
 
-                // B. Crear Paciente (Relación 1:1)
+            // B. SI ES PACIENTE -> CREAR PERFIL Y SEGURO
+            if ($request->rol === 'paciente') {
                 Paciente::create([
                     'user_id' => $user->id,
                     'dui' => $request->dui,
@@ -63,20 +67,12 @@ class RegisteredUserController extends Controller
                     'ubicacion_zona' => $request->ubicacion_zona,
                 ]);
 
-                // C. CÁLCULO DE PRIMA (Lógica Core)
+                // Lógica de Precios
                 $prima = 50.00;
                 $edad = Carbon::parse($request->fecha_nacimiento)->age;
-                
-                // Lógica: +$1 por cada año arriba de 40
-                if ($edad > 40) {
-                    $prima += ($edad - 40);
-                }
-                // Lógica: +20% si es Rural
-                if ($request->ubicacion_zona === 'Alto Riesgo') {
-                    $prima *= 1.20;
-                }
+                if ($edad > 40) $prima += ($edad - 40);
+                if ($request->ubicacion_zona === 'Alto Riesgo') $prima *= 1.20;
 
-                // D. Crear Póliza (Relación 1:N)
                 Poliza::create([
                     'user_id' => $user->id,
                     'nombre_plan' => 'Plan ' . $request->ubicacion_zona,
@@ -84,15 +80,16 @@ class RegisteredUserController extends Controller
                     'cobertura' => 1000.00,
                     'estado' => 'activa'
                 ]);
+            }
+            
+            // C. SI ES MÉDICO -> (Opcional: Podrías crear una tabla 'medicos' con el JVPM, 
+            // pero para no complicarte, solo guardamos el usuario con rol 'medico')
 
-                event(new Registered($user));
-                Auth::login($user);
-            });
+            event(new Registered($user));
+            Auth::login($user);
+        });
 
-            return redirect(route('dashboard', absolute: false));
-
-        } catch (\Exception $e) {
-            dd('ERROR CRÍTICO DE BD:', $e->getMessage());
-        }
+        // Redirección inteligente al Dashboard
+        return redirect(route('dashboard', absolute: false));
     }
 }
