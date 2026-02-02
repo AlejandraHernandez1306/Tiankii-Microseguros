@@ -24,16 +24,17 @@ class RegisteredUserController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        // Validación
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed'],
-            'rol' => ['required', 'in:paciente,medico'], // Validación estricta
+            'rol' => ['required', 'in:paciente,medico'],
         ]);
 
         DB::transaction(function () use ($request) {
             
-            // 1. Crear Usuario
+            // 1. Crear Usuario Maestro
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -41,27 +42,36 @@ class RegisteredUserController extends Controller
                 'rol' => $request->rol,
             ]);
 
-            // 2. Si es Paciente, crear perfil médico y póliza
+            // 2. Lógica solo para Pacientes
             if ($request->rol === 'paciente') {
                 
-                // Valores de seguridad por si el formulario falla en enviar algún dato
-                $fecha = $request->fecha_nacimiento ?? '2000-01-01';
-                $zona = $request->ubicacion_zona ?? 'Bajo Riesgo';
+                // Valores por defecto "A prueba de fallos"
+                // Si el usuario no selecciona fecha, asumimos una edad base para que no truene el sistema
+                $fecha = $request->fecha_nacimiento ?? '2000-01-01'; 
+                $zona = $request->ubicacion_zona ?? 'Bajo Riesgo'; 
                 $dui = $request->dui ?? 'PENDIENTE-' . time();
 
                 Paciente::create([
                     'user_id' => $user->id,
                     'dui' => $dui,
-                    'telefono' => $request->telefono ?? 'Sin numero',
+                    'telefono' => $request->telefono ?? '0000-0000',
                     'fecha_nacimiento' => $fecha,
                     'ubicacion_zona' => $zona,
                 ]);
 
-                // Crear Póliza
-                $prima = 50.00;
+                // --- LÓGICA DE NEGOCIO (CALCULO DE PRECIO) ---
+                // Requisito: Calcular precio por zona y edad
+                $prima = 50.00; // Base
                 $edad = Carbon::parse($fecha)->age;
-                if ($edad > 40) $prima += ($edad - 40);
-                if ($zona === 'Alto Riesgo') $prima *= 1.20;
+                
+                // Regla 1: +$1 por cada año arriba de 40
+                if ($edad > 40) {
+                    $prima += ($edad - 40);
+                }
+                // Regla 2: +20% si es Rural (Alto Riesgo)
+                if ($zona === 'Alto Riesgo') {
+                    $prima *= 1.20;
+                }
 
                 Poliza::create([
                     'user_id' => $user->id,
