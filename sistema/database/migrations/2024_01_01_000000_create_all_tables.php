@@ -8,19 +8,29 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // 1. TABLAS DEL SISTEMA (Cache, Sesiones - Lo que te daba error)
+        // 1. USUARIOS (Con Encriptación y Rol)
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password'); // Aquí se guardará el Hash
+            $table->string('rol')->default('paciente'); // Requisito Roles
+            $table->rememberToken();
+            $table->timestamps();
+        });
+
+        // 2. TABLAS DE SISTEMA (Cache y Sesiones - VITALES para Laravel 11)
         Schema::create('cache', function (Blueprint $table) {
             $table->string('key')->primary();
             $table->mediumText('value');
             $table->integer('expiration');
         });
-
         Schema::create('cache_locks', function (Blueprint $table) {
             $table->string('key')->primary();
             $table->string('owner');
             $table->integer('expiration');
         });
-
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
@@ -29,29 +39,16 @@ return new class extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
         });
-
-        // 2. USUARIOS (Con el Rol arreglado)
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->string('rol')->default('paciente'); // <--- AQUÍ ESTÁ EL ROL
-            $table->rememberToken();
-            $table->timestamps();
-        });
-
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
-        // 3. TABLAS DE TIANKII
+        // 3. TABLAS DE TIANKII (Lógica de Negocio 1:N)
         Schema::create('pacientes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Relación 1:1
             $table->string('dui')->nullable();
             $table->string('telefono')->nullable();
             $table->date('fecha_nacimiento')->nullable();
@@ -61,7 +58,7 @@ return new class extends Migration
 
         Schema::create('polizas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Relación 1:N
             $table->string('nombre_plan');
             $table->decimal('costo', 10, 2);
             $table->decimal('cobertura', 10, 2);
@@ -71,7 +68,7 @@ return new class extends Migration
 
         Schema::create('atenciones', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('paciente_user_id')->constrained('users');
+            $table->foreignId('paciente_user_id')->constrained('users'); // Relación Histórica
             $table->foreignId('medico_user_id')->constrained('users');
             $table->string('diagnostico');
             $table->text('receta')->nullable();
@@ -84,14 +81,13 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Borrar todo si es necesario
         Schema::dropIfExists('atenciones');
         Schema::dropIfExists('polizas');
         Schema::dropIfExists('pacientes');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('users');
         Schema::dropIfExists('sessions');
         Schema::dropIfExists('cache');
         Schema::dropIfExists('cache_locks');
+        Schema::dropIfExists('password_reset_tokens');
     }
 };

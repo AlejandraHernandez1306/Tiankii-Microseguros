@@ -51,20 +51,6 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-// ==========================================
-// API DE CONSULTA (Requisito OES.5)
-// Prueba: http://127.0.0.1:8000/api/paciente/1
-// ==========================================
-Route::get('/api/paciente/{id}', function ($id) {
-    // Busca usuario con sus relaciones
-    $data = \App\Models\User::with('paciente', 'polizas')->find($id);
-    
-    if (!$data) return response()->json(['error' => 'No encontrado'], 404);
-    
-    return response()->json([
-        'status' => 'ok',
-        'usuario' => $data->name,
-        'perfil_medico' => $data->paciente,
-        'seguro_activo' => $data->polizas->first()
-    ]);
+Route::get('/api/usuario/{id}', function($id) {
+    return \App\Models\User::with('polizas')->find($id);
 });

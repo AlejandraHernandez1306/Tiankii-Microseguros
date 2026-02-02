@@ -26,30 +26,27 @@ class RegisteredUserController extends Controller
 
     public function store(Request $request)
     {
-        // 1. DEBUG: Ver qué datos llegan (Si ves esto en pantalla, el formulario sí envía)
-        // dd($request->all()); // Descomenta esto si quieres ver los datos crudos
-
+        // 1. VALIDACIÓN MANUAL (Para que veas el error si falla)
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            // Estos son los nuevos, si faltan en el HTML, aquí fallará
-            'dui' => ['required', 'string'], 
+            'dui' => ['required', 'string'], // Si esto falta en el HTML, aquí tronará
             'telefono' => ['required', 'string'],
             'fecha_nacimiento' => ['required', 'date'],
             'ubicacion_zona' => ['required'],
         ]);
 
         if ($validator->fails()) {
-            // ¡AQUÍ ESTÁ EL CHIVATO!
-            // Si falla, te mostrará una pantalla negra con los errores.
-            dd('FALLÓ LA VALIDACIÓN:', $validator->errors()->all());
+            // ESTO TE MOSTRARÁ EL ERROR EN PANTALLA NEGRA
+            dd('ERROR DE VALIDACIÓN (Faltan datos en el form):', $validator->errors()->all());
         }
 
-        // 2. Si pasa la validación, intenta guardar
+        // 2. LÓGICA DE NEGOCIO Y BD
         try {
             DB::transaction(function () use ($request) {
                 
+                // A. Crear Usuario (Encriptación Hash::make)
                 $user = User::create([
                     'name' => $request->name,
                     'email' => $request->email,
@@ -57,6 +54,7 @@ class RegisteredUserController extends Controller
                     'rol' => 'paciente',
                 ]);
 
+                // B. Crear Paciente (Relación 1:1)
                 Paciente::create([
                     'user_id' => $user->id,
                     'dui' => $request->dui,
@@ -65,15 +63,23 @@ class RegisteredUserController extends Controller
                     'ubicacion_zona' => $request->ubicacion_zona,
                 ]);
 
-                // Lógica del PDF (Precios)
+                // C. CÁLCULO DE PRIMA (Lógica Core)
                 $prima = 50.00;
                 $edad = Carbon::parse($request->fecha_nacimiento)->age;
-                if ($edad > 40) $prima += ($edad - 40);
-                if ($request->ubicacion_zona === 'Alto Riesgo') $prima *= 1.2;
+                
+                // Lógica: +$1 por cada año arriba de 40
+                if ($edad > 40) {
+                    $prima += ($edad - 40);
+                }
+                // Lógica: +20% si es Rural
+                if ($request->ubicacion_zona === 'Alto Riesgo') {
+                    $prima *= 1.20;
+                }
 
+                // D. Crear Póliza (Relación 1:N)
                 Poliza::create([
                     'user_id' => $user->id,
-                    'nombre_plan' => 'Microseguro ' . $request->ubicacion_zona,
+                    'nombre_plan' => 'Plan ' . $request->ubicacion_zona,
                     'costo' => $prima,
                     'cobertura' => 1000.00,
                     'estado' => 'activa'
@@ -86,8 +92,7 @@ class RegisteredUserController extends Controller
             return redirect(route('dashboard', absolute: false));
 
         } catch (\Exception $e) {
-            // Si falla la Base de Datos, te mostrará esto:
-            dd('ERROR DE BASE DE DATOS:', $e->getMessage());
+            dd('ERROR CRÍTICO DE BD:', $e->getMessage());
         }
     }
 }
