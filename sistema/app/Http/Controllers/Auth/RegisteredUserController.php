@@ -34,14 +34,14 @@ class RegisteredUserController extends Controller
         ]);
 
         if ($validator->fails()) {
-            // Si falla, te dirá EXACTAMENTE qué campo falta en lugar de recargar
+            
             dd('ERROR DE VALIDACIÓN (Faltan datos):', $validator->errors()->all(), 'DATOS RECIBIDOS:', $request->all());
         }
 
         try {
             DB::transaction(function () use ($request) {
                 
-                // 2. CREAR USUARIO (Ahora sí guardará el rol gracias al Paso 1)
+                // 2. CREAR USUARIO 
                 $user = User::create([
                     'name' => $request->name,
                     'email' => $request->email,
@@ -89,7 +89,7 @@ class RegisteredUserController extends Controller
             return redirect(route('dashboard'));
 
         } catch (\Exception $e) {
-            // SI FALLA LA BASE DE DATOS, TE LO DIRÁ AQUÍ
+            
             dd("ERROR CRÍTICO:", $e->getMessage());
         }
     }
