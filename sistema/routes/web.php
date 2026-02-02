@@ -6,17 +6,15 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
-// 1. PÁGINA DE INICIO
 Route::get('/', function () {
     return view('welcome');
 });
 
-// 2. DASHBOARD MODULAR (Redirección inteligente)
+// DASHBOARD MODULAR (Sin 'verified' para que no te bloquee)
 Route::get('/dashboard', function () {
     $user = Auth::user();
     if (!$user) return redirect('/login');
 
-    // Aquí se aplica la recomendación de "Separar dashboards"
     if ($user->rol === 'admin') {
         return view('admin.dashboard', compact('user')); 
     } 
@@ -24,21 +22,20 @@ Route::get('/dashboard', function () {
         return view('medico.dashboard', compact('user'));
     } 
     else {
-        return view('dashboard', compact('user')); // Paciente
+        return view('dashboard', compact('user'));
     }
 })->middleware(['auth'])->name('dashboard');
 
-// 3. AUTENTICACIÓN
 require __DIR__.'/auth.php';
 
-// 4. PERFIL
+// PERFIL
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// 5. ADMIN (Gestión de Usuarios)
+// ADMIN (Gestión de Usuarios)
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/editar/{id}', function ($id) {
         if (Auth::user()->rol !== 'admin') return redirect('/dashboard');
@@ -63,7 +60,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('admin.destroy');
 });
 
-// 6. MÉDICO (Historial y Consultas)
+// MÉDICO (Historial)
 Route::middleware(['auth'])->group(function () {
     Route::post('/medico/registrar-consulta', function (\Illuminate\Http\Request $request) {
         if (Auth::user()->rol !== 'medico') return abort(403);
@@ -78,7 +75,7 @@ Route::middleware(['auth'])->group(function () {
             'monto_cubierto' => $request->costo * 0.8,
             'copago_paciente' => $request->costo * 0.2
         ]);
-        return back()->with('success', 'Consulta registrada');
+        return back();
     })->name('medico.registrar');
 
     Route::get('/medico/paciente/{id}', function ($id) {
@@ -88,7 +85,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('medico.ver_historial');
 });
 
-// 7. API JSON (Requisito OES.5)
+// API
 Route::get('/api/paciente/{id}', function ($id) {
     return User::with('paciente', 'polizas')->find($id);
 });

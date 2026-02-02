@@ -34,8 +34,7 @@ class RegisteredUserController extends Controller
         ]);
 
         if ($validator->fails()) {
-            // ESTO DETIENE TODO Y TE MUESTRA EL ERROR EN PANTALLA NEGRA
-            dd('FALLÓ LA VALIDACIÓN:', $validator->errors()->all()); 
+            return back()->withErrors($validator)->withInput();
         }
 
         // 2. INTENTO DE GUARDADO
@@ -85,8 +84,8 @@ class RegisteredUserController extends Controller
             return redirect(route('dashboard'));
 
         } catch (\Exception $e) {
-            // ESTO TE MUESTRA EL ERROR DE BASE DE DATOS
-            dd('ERROR CRÍTICO DEL SISTEMA:', $e->getMessage()); 
+            // En caso de error crítico de BD, lo mostramos para saber qué pasó
+            dd('ERROR DE SISTEMA:', $e->getMessage());
         }
     }
 }
