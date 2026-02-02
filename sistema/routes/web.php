@@ -26,7 +26,7 @@ Route::get('/dashboard', function () {
     else {
         return view('dashboard', compact('user')); // Paciente
     }
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth'])->name('dashboard');
 
 // 3. AUTENTICACIÓN
 require __DIR__.'/auth.php';

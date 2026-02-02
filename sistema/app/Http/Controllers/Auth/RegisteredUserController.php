@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
 
 class RegisteredUserController extends Controller
 {
@@ -22,70 +23,70 @@ class RegisteredUserController extends Controller
         return view('auth.register');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
-        // Validación
-        $request->validate([
+        // 1. VALIDACIÓN
+        $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed'],
             'rol' => ['required', 'in:paciente,medico'],
         ]);
 
-        DB::transaction(function () use ($request) {
-            
-            // 1. Crear Usuario Maestro
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'rol' => $request->rol,
-            ]);
+        if ($validator->fails()) {
+            // ESTO DETIENE TODO Y TE MUESTRA EL ERROR EN PANTALLA NEGRA
+            dd('FALLÓ LA VALIDACIÓN:', $validator->errors()->all()); 
+        }
 
-            // 2. Lógica solo para Pacientes
-            if ($request->rol === 'paciente') {
+        // 2. INTENTO DE GUARDADO
+        try {
+            DB::transaction(function () use ($request) {
                 
-                // Valores por defecto "A prueba de fallos"
-                // Si el usuario no selecciona fecha, asumimos una edad base para que no truene el sistema
-                $fecha = $request->fecha_nacimiento ?? '2000-01-01'; 
-                $zona = $request->ubicacion_zona ?? 'Bajo Riesgo'; 
-                $dui = $request->dui ?? 'PENDIENTE-' . time();
-
-                Paciente::create([
-                    'user_id' => $user->id,
-                    'dui' => $dui,
-                    'telefono' => $request->telefono ?? '0000-0000',
-                    'fecha_nacimiento' => $fecha,
-                    'ubicacion_zona' => $zona,
+                // Crear Usuario
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'password' => Hash::make($request->password),
+                    'rol' => $request->rol,
                 ]);
 
-                // --- LÓGICA DE NEGOCIO (CALCULO DE PRECIO) ---
-                // Requisito: Calcular precio por zona y edad
-                $prima = 50.00; // Base
-                $edad = Carbon::parse($fecha)->age;
-                
-                // Regla 1: +$1 por cada año arriba de 40
-                if ($edad > 40) {
-                    $prima += ($edad - 40);
+                // Crear Paciente (si aplica)
+                if ($request->rol === 'paciente') {
+                    $fecha = $request->fecha_nacimiento ?? '2000-01-01';
+                    $zona = $request->ubicacion_zona ?? 'Bajo Riesgo';
+                    
+                    Paciente::create([
+                        'user_id' => $user->id,
+                        'dui' => $request->dui ?? 'PENDIENTE-' . time(),
+                        'telefono' => $request->telefono ?? '0000-0000',
+                        'fecha_nacimiento' => $fecha,
+                        'ubicacion_zona' => $zona,
+                    ]);
+
+                    // Cálculo Lógica de Negocio
+                    $prima = 50.00;
+                    $edad = Carbon::parse($fecha)->age;
+                    if ($edad > 40) $prima += ($edad - 40);
+                    if ($zona === 'Alto Riesgo') $prima *= 1.20;
+
+                    Poliza::create([
+                        'user_id' => $user->id,
+                        'nombre_plan' => 'Plan ' . $zona,
+                        'costo' => $prima,
+                        'cobertura' => 1000.00,
+                        'estado' => 'activa'
+                    ]);
                 }
-                // Regla 2: +20% si es Rural (Alto Riesgo)
-                if ($zona === 'Alto Riesgo') {
-                    $prima *= 1.20;
-                }
 
-                Poliza::create([
-                    'user_id' => $user->id,
-                    'nombre_plan' => 'Plan ' . $zona,
-                    'costo' => $prima,
-                    'cobertura' => 1000.00,
-                    'estado' => 'activa'
-                ]);
-            }
+                event(new Registered($user));
+                Auth::login($user);
+            });
 
-            event(new Registered($user));
-            Auth::login($user);
-        });
+            return redirect(route('dashboard'));
 
-        return redirect(route('dashboard', absolute: false));
+        } catch (\Exception $e) {
+            // ESTO TE MUESTRA EL ERROR DE BASE DE DATOS
+            dd('ERROR CRÍTICO DEL SISTEMA:', $e->getMessage()); 
+        }
     }
 }
