@@ -1,62 +1,36 @@
-<x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
-        @csrf
+<x-app-layout>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6 border-l-4 border-teal-500">
+                <div class="p-6">
+                    <h1 class="text-2xl font-bold text-teal-800">🩺 Panel Médico</h1>
+                    <p>Bienvenido Dr. {{ Auth::user()->name }}</p>
+                </div>
+            </div>
 
-        <div>
-            <x-input-label for="name" :value="__('Nombre Completo')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded shadow">
+                    <h3 class="font-bold mb-4">Nueva Consulta</h3>
+                    <form action="{{ route('medico.registrar') }}" method="POST">
+                        @csrf
+                        <input type="email" name="email" placeholder="Correo Paciente" class="w-full border rounded mb-2 p-2" required>
+                        <textarea name="diagnostico" placeholder="Diagnóstico" class="w-full border rounded mb-2 p-2"></textarea>
+                        <button class="bg-teal-600 text-white w-full py-2 rounded font-bold">Guardar Consulta</button>
+                    </form>
+                </div>
+
+                <div class="bg-white p-6 rounded shadow">
+                    <h3 class="font-bold mb-4">Pacientes Recientes</h3>
+                    <ul>
+                        @foreach(\App\Models\User::where('rol', 'paciente')->limit(5)->get() as $p)
+                        <li class="border-b py-2 flex justify-between">
+                            <span>{{ $p->name }}</span>
+                            <span class="text-sm text-gray-500">{{ $p->email }}</span>
+                        </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
         </div>
-
-        <div class="mt-4">
-            <x-input-label for="dui" :value="__('DUI (Sin guiones)')" />
-            <x-text-input id="dui" class="block mt-1 w-full" type="text" name="dui" placeholder="000000000" :value="old('dui')" required />
-            <x-input-error :messages="$errors->get('dui')" class="mt-2" />
-        </div>
-
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Correo Electrónico')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
-
-        <div class="mt-4">
-            <x-input-label for="telefono" :value="__('Teléfono Móvil')" />
-            <x-text-input id="telefono" class="block mt-1 w-full" type="text" name="telefono" required />
-        </div>
-
-        <div class="mt-4">
-            <x-input-label for="fecha_nacimiento" :value="__('Fecha de Nacimiento')" />
-            <x-text-input id="fecha_nacimiento" class="block mt-1 w-full" type="date" name="fecha_nacimiento" required />
-        </div>
-
-        <div class="mt-4">
-            <x-input-label for="ubicacion_zona" :value="__('Zona de Residencia')" />
-            <select id="ubicacion_zona" name="ubicacion_zona" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                <option value="Bajo Riesgo">Urbana / Bajo Riesgo (Plan Base)</option>
-                <option value="Alto Riesgo">Rural / Alto Riesgo (+20% Prima)</option>
-            </select>
-        </div>
-
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Contraseña')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirmar Contraseña')" />
-            <x-text-input id="password_confirmation" class="block mt-1 w-full" type="password" name="password_confirmation" required />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('¿Ya estás registrado?') }}
-            </a>
-
-            <x-primary-button class="ms-4">
-                {{ __('Registrar y Generar Póliza') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+    </div>
+</x-app-layout>

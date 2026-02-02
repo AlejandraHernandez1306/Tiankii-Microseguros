@@ -12,9 +12,9 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. ADMIN (Usa firstOrCreate para no duplicar)
+        // 1. ADMIN (Gestión Total)
         User::firstOrCreate(
-            ['email' => 'admin@tiankii.com'], // Busca por este email
+            ['email' => 'admin@tiankii.com'],
             [
                 'name' => 'Administrador',
                 'password' => Hash::make('password'),
@@ -22,18 +22,18 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 2. MÉDICO
+        // 2. MÉDICO (Funciones: Consultas, Historial)
         User::firstOrCreate(
             ['email' => 'medico@tiankii.com'],
             [
-                'name' => 'Medico General',
+                'name' => 'Dr. Especialista',
                 'password' => Hash::make('password'),
                 'rol' => 'medico',
             ]
         );
 
-        // 3. PACIENTE DEMO
-        $pacienteUser = User::firstOrCreate(
+        // 3. PACIENTE (Funciones: Ver Póliza)
+        $paciente = User::firstOrCreate(
             ['email' => 'paciente@tiankii.com'],
             [
                 'name' => 'Paciente Demo',
@@ -42,23 +42,25 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Crear datos del paciente SOLO si no existen
-        if (!Paciente::where('user_id', $pacienteUser->id)->exists()) {
-            Paciente::create([
-                'user_id' => $pacienteUser->id,
-                'dui' => '88888888-8',
-                'telefono' => '7777-7777',
+        // Datos vitales del paciente 
+        $pacienteData = Paciente::firstOrCreate(
+            ['user_id' => $paciente->id],
+            [
+                'dui' => '00000000-0',
+                'telefono' => '7000-0000',
                 'fecha_nacimiento' => '1990-01-01',
                 'ubicacion_zona' => 'Alto Riesgo'
-            ]);
+            ]
+        );
 
-            Poliza::create([
-                'user_id' => $pacienteUser->id,
+        Poliza::firstOrCreate(
+            ['user_id' => $paciente->id],
+            [
                 'nombre_plan' => 'Plan Rural',
                 'costo' => 60.00,
                 'cobertura' => 1000.00,
                 'estado' => 'activa'
-            ]);
-        }
+            ]
+        );
     }
 }
