@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -11,11 +10,15 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    /**
+     * 
+     * Al agregar 'rol' aquí, Laravel dejará de borrarlo silenciosamente.
+     */
     protected $fillable = [
         'name',
         'email',
         'password',
-        'rol', // <--- ESTO FALTABA. SIN ESTO, NO GUARDA SI ERES MÉDICO O PACIENTE.
+        'rol', 
     ];
 
     protected $hidden = [
@@ -31,16 +34,19 @@ class User extends Authenticatable
         ];
     }
 
-    // Relaciones (Para modularidad y lógica de negocio)
+    // --- RELACIONES (LO QUE PIDIÓ EL JURADO) ---
+    // 1 a 1: Usuario -> Paciente
     public function paciente() {
         return $this->hasOne(Paciente::class);
     }
 
+    // 1 a Muchos: Usuario -> Pólizas (Historial)
     public function polizas() {
         return $this->hasMany(Poliza::class);
     }
 
-    public function atenciones() {
-        return $this->hasMany(Atencion::class, 'paciente_user_id');
+    // 1 a Muchos: Médico -> Atenciones
+    public function atenciones_medicas() {
+        return $this->hasMany(Atencion::class, 'medico_user_id');
     }
 }

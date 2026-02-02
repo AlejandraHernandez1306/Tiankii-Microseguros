@@ -30,18 +30,18 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed'],
-            'rol' => ['required', 'in:paciente,medico'],
+            'rol' => ['required', 'in:paciente,medico'], // Obliga a que venga el rol
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            // Si falla, te dirá EXACTAMENTE qué campo falta en lugar de recargar
+            dd('ERROR DE VALIDACIÓN (Faltan datos):', $validator->errors()->all(), 'DATOS RECIBIDOS:', $request->all());
         }
 
-        // 2. INTENTO DE GUARDADO
         try {
             DB::transaction(function () use ($request) {
                 
-                // Crear Usuario
+                // 2. CREAR USUARIO (Ahora sí guardará el rol gracias al Paso 1)
                 $user = User::create([
                     'name' => $request->name,
                     'email' => $request->email,
@@ -49,8 +49,10 @@ class RegisteredUserController extends Controller
                     'rol' => $request->rol,
                 ]);
 
-                // Crear Paciente (si aplica)
+                // 3. LÓGICA DE PACIENTE (Solo si es paciente)
                 if ($request->rol === 'paciente') {
+                    
+                    // Valores por defecto para evitar errores si el formulario HTML falla
                     $fecha = $request->fecha_nacimiento ?? '2000-01-01';
                     $zona = $request->ubicacion_zona ?? 'Bajo Riesgo';
                     
@@ -62,10 +64,13 @@ class RegisteredUserController extends Controller
                         'ubicacion_zona' => $zona,
                     ]);
 
-                    // Cálculo Lógica de Negocio
+                    // --- LÓGICA DE NEGOCIO (CÁLCULO DE PRIMA) ---
                     $prima = 50.00;
                     $edad = Carbon::parse($fecha)->age;
+                    
+                    // Lógica: +$1 por año arriba de 40
                     if ($edad > 40) $prima += ($edad - 40);
+                    // Lógica: +20% si es Rural
                     if ($zona === 'Alto Riesgo') $prima *= 1.20;
 
                     Poliza::create([
@@ -84,8 +89,8 @@ class RegisteredUserController extends Controller
             return redirect(route('dashboard'));
 
         } catch (\Exception $e) {
-            // En caso de error crítico de BD, lo mostramos para saber qué pasó
-            dd('ERROR DE SISTEMA:', $e->getMessage());
+            // SI FALLA LA BASE DE DATOS, TE LO DIRÁ AQUÍ
+            dd("ERROR CRÍTICO:", $e->getMessage());
         }
     }
 }

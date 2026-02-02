@@ -36,17 +36,26 @@
         </div>
 
         <div id="extra-paciente">
-            <div class="mb-4">
-                <label>DUI (Obligatorio)</label>
-                <input type="text" name="dui" class="w-full border-gray-300 rounded" placeholder="00000000-0">
-            </div>
-            <div class="mb-4">
-                <label>Zona</label>
-                <select name="ubicacion_zona" class="w-full border-gray-300 rounded">
-                    <option value="Bajo Riesgo">Urbana</option>
-                    <option value="Alto Riesgo">Rural</option>
-                </select>
-            </div>
+    <div class="mb-4">
+        <label class="block font-bold text-gray-700">DUI</label>
+        <input type="text" name="dui" class="w-full border-gray-300 rounded" placeholder="00000000-0">
+    </div>
+    <div class="mb-4">
+        <label class="block font-bold text-gray-700">Teléfono</label>
+        <input type="text" name="telefono" class="w-full border-gray-300 rounded">
+    </div>
+    <div class="mb-4">
+        <label class="block font-bold text-gray-700">Fecha de Nacimiento</label>
+        <input type="date" name="fecha_nacimiento" class="w-full border-gray-300 rounded">
+    </div>
+    <div class="mb-4">
+        <label class="block font-bold text-gray-700">Zona</label>
+        <select name="ubicacion_zona" class="w-full border-gray-300 rounded">
+            <option value="Bajo Riesgo">Urbana (Bajo Riesgo)</option>
+            <option value="Alto Riesgo">Rural (Alto Riesgo)</option>
+        </select>
+    </div>
+</div>
             <input type="hidden" name="telefono" value="0000-0000"> <input type="hidden" name="fecha_nacimiento" value="2000-01-01"> </div>
 
         <div class="flex items-center justify-between mt-6">

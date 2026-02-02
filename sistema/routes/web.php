@@ -10,15 +10,17 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// DASHBOARD MODULAR (Sin 'verified' para que no te bloquee)
+// --- DASHBOARD MODULAR (Sin 'verified' para que no te bloquee) ---
 Route::get('/dashboard', function () {
     $user = Auth::user();
     if (!$user) return redirect('/login');
 
     if ($user->rol === 'admin') {
+        // Asegúrate de tener la vista resources/views/admin/dashboard.blade.php
         return view('admin.dashboard', compact('user')); 
     } 
     elseif ($user->rol === 'medico') {
+        // Asegúrate de tener la vista resources/views/medico/dashboard.blade.php
         return view('medico.dashboard', compact('user'));
     } 
     else {
@@ -28,14 +30,14 @@ Route::get('/dashboard', function () {
 
 require __DIR__.'/auth.php';
 
-// PERFIL
+// RUTAS DE PERFIL
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// ADMIN (Gestión de Usuarios)
+// ADMIN
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/editar/{id}', function ($id) {
         if (Auth::user()->rol !== 'admin') return redirect('/dashboard');
@@ -60,7 +62,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('admin.destroy');
 });
 
-// MÉDICO (Historial)
+// MÉDICO
 Route::middleware(['auth'])->group(function () {
     Route::post('/medico/registrar-consulta', function (\Illuminate\Http\Request $request) {
         if (Auth::user()->rol !== 'medico') return abort(403);
@@ -75,7 +77,7 @@ Route::middleware(['auth'])->group(function () {
             'monto_cubierto' => $request->costo * 0.8,
             'copago_paciente' => $request->costo * 0.2
         ]);
-        return back();
+        return back()->with('success', 'Consulta registrada');
     })->name('medico.registrar');
 
     Route::get('/medico/paciente/{id}', function ($id) {
