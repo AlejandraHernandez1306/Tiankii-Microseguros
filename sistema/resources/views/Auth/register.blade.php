@@ -38,10 +38,20 @@
                 </div>
             </div>
 
-            <div class="mt-3">
-                <label for="fecha_nacimiento" class="block font-medium text-sm text-gray-700">Fecha de Nacimiento</label>
-                <input id="fecha_nacimiento" class="block mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white p-2" type="date" name="fecha_nacimiento" :value="old('fecha_nacimiento')" required />
-            </div>
+            <div class="mt-4">
+            <x-input-label for="fecha_nacimiento" :value="__('Fecha de Nacimiento')" />
+            <x-text-input id="fecha_nacimiento" class="block mt-1 w-full" type="date" name="fecha_nacimiento" required />
+            <x-input-error :messages="$errors->get('fecha_nacimiento')" class="mt-2" />
+        </div>
+
+        <div class="mt-4">
+            <x-input-label for="ubicacion_zona" :value="__('Zona de Residencia')" />
+            <select id="ubicacion_zona" name="ubicacion_zona" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <option value="Bajo Riesgo">Urbana / Bajo Riesgo (Plan Base)</option>
+                <option value="Alto Riesgo">Rural / Alto Riesgo (+20% Prima)</option>
+            </select>
+            <x-input-error :messages="$errors->get('ubicacion_zona')" class="mt-2" />
+        </div>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
