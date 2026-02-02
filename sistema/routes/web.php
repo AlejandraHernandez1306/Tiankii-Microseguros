@@ -54,3 +54,51 @@ require __DIR__.'/auth.php';
 Route::get('/api/usuario/{id}', function($id) {
     return \App\Models\User::with('polizas')->find($id);
 });
+
+// RUTA DE EDICIÓN DE USUARIOS (SOLO ADMIN)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/editar/{id}', function ($id) {
+        if (Auth::user()->rol !== 'admin') return redirect('/dashboard');
+        $usuario = \App\Models\User::with('paciente')->findOrFail($id);
+        return view('admin.edit', compact('usuario'));
+    })->name('admin.edit');
+
+    Route::post('/admin/editar/{id}', function (\Illuminate\Http\Request $request, $id) {
+        if (Auth::user()->rol !== 'admin') return redirect('/dashboard');
+        $usuario = \App\Models\User::findOrFail($id);
+        
+        $usuario->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'rol' => $request->rol
+        ]);
+
+        // Si es paciente y cambiamos su zona, actualizamos también
+        if ($usuario->paciente && $request->has('ubicacion_zona')) {
+            $usuario->paciente->update(['ubicacion_zona' => $request->ubicacion_zona]);
+        }
+
+        return redirect('/dashboard')->with('success', 'Usuario actualizado con autoridad.');
+    })->name('admin.update');
+});
+
+// RUTAS MÉDICO AVANZADO
+Route::middleware(['auth'])->group(function () {
+    // Ver Historial
+    Route::get('/medico/paciente/{id}', function ($id) {
+        if (Auth::user()->rol !== 'medico') return redirect('/dashboard');
+        $paciente = \App\Models\User::with(['paciente', 'polizas', 'atenciones'])->findOrFail($id);
+        return view('medico.historial', compact('paciente'));
+    })->name('medico.ver_historial');
+
+    // Cambiar Estado Póliza (Activo/Inactivo)
+    Route::post('/medico/toggle-poliza/{id}', function ($id) {
+        if (Auth::user()->rol !== 'medico') return abort(403);
+        $poliza = \App\Models\Poliza::where('user_id', $id)->first();
+        if ($poliza) {
+            $poliza->estado = ($poliza->estado === 'activa') ? 'cancelada' : 'activa';
+            $poliza->save();
+        }
+        return back()->with('success', 'Estado de la póliza actualizado.');
+    })->name('medico.toggle_poliza');
+});

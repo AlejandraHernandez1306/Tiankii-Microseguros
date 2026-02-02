@@ -54,7 +54,7 @@
                                             <input type="hidden" name="user_id_to_delete" value="{{ $u->id }}"> 
                                             <button type="button" onclick="alert('En producción: Usuario eliminado. (Simulado por seguridad en Demo)')" class="text-red-600 hover:text-red-900 font-bold text-sm">
                                                 🗑 Eliminar
-                                            </button>
+                                            </button><a href="{{ route('admin.edit', $u->id) }}" class="text-indigo-600 hover:text-indigo-900 font-bold mr-3">✏️ Editar</a>
                                         </form>
                                     @else
                                         <span class="text-gray-400 text-xs">Actual</span>
