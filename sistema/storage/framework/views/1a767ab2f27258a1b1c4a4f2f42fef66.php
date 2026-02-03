@@ -20,12 +20,12 @@
     </div>
 
     <div class="content">
-        <p>Por medio del presente documento, se certifica que <strong>{{ Auth::user()->name }}</strong> (el "Asegurado"), con correo electrónico {{ Auth::user()->email }}, ha adquirido satisfactoriamente la póliza de microseguro.</p>
+        <p>Por medio del presente documento, se certifica que <strong><?php echo e(Auth::user()->name); ?></strong> (el "Asegurado"), con correo electrónico <?php echo e(Auth::user()->email); ?>, ha adquirido satisfactoriamente la póliza de microseguro.</p>
 
         <h3>TÉRMINOS Y CONDICIONES</h3>
         <p>1. <strong>COBERTURA:</strong> La aseguradora se compromete a cubrir gastos médicos hasta por la suma de $1,000.00 USD anuales.</p>
         <p>2. <strong>COPAGO:</strong> El asegurado será responsable del 20% de cada evento médico realizado en la red.</p>
-        <p>3. <strong>VIGENCIA:</strong> Este contrato entra en vigor a partir de la fecha de registro: {{ Auth::user()->created_at->format('d/m/Y') }}.</p>
+        <p>3. <strong>VIGENCIA:</strong> Este contrato entra en vigor a partir de la fecha de registro: <?php echo e(Auth::user()->created_at->format('d/m/Y')); ?>.</p>
         
         <p>Este documento sirve como comprobante legal de afiliación.</p>
     </div>
@@ -34,4 +34,4 @@
         Firma Autorizada<br>Tiankii Seguros
     </div>
 </body>
-</html>
+</html><?php /**PATH C:\Users\Ale Mar\Tiankii-Microseguros\sistema\resources\views/contract.blade.php ENDPATH**/ ?>

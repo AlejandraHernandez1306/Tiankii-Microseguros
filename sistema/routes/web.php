@@ -85,3 +85,8 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/api/paciente/{id}', function ($id) {
     return User::with('paciente', 'polizas')->find($id);
 });
+
+// RUTA DE CONTRATO (Accesible para todos los logueados)
+Route::get('/contrato', function () {
+    return view('contract');
+})->middleware(['auth'])->name('contrato.ver');
