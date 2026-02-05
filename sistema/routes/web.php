@@ -4,34 +4,39 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Atencion; // Asegúrate de que este modelo exista
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-// --- DASHBOARD MODULAR CON PAGINACIÓN ---
+// DASHBOARD INTELIGENTE
 Route::get('/dashboard', function () {
     $user = Auth::user();
     if (!$user) return redirect('/login');
 
     if ($user->rol === 'admin') {
-        // CAMBIO: paginate(10) en vez de all()
+        // PAGINACIÓN: 10 usuarios por página
         $users = User::paginate(10); 
         return view('admin.dashboard', compact('user', 'users')); 
     } 
     elseif ($user->rol === 'medico') {
-        // CAMBIO: paginate(10) para pacientes
+        // ESTADÍSTICAS PARA GRÁFICOS (FACTOR WOW)
         $pacientes = User::where('rol', 'paciente')->paginate(10);
-        return view('medico.dashboard', compact('user', 'pacientes'));
+        $totalPacientes = User::where('rol', 'paciente')->count();
+        $consultasMes = Atencion::where('medico_user_id', $user->id)->count();
+        $ingresos = Atencion::where('medico_user_id', $user->id)->sum('costo_total');
+        
+        return view('medico.dashboard', compact('user', 'pacientes', 'totalPacientes', 'consultasMes', 'ingresos'));
     } 
     else {
         return view('dashboard', compact('user'));
     }
-})->middleware(['auth'])->name('dashboard');
+})->middleware(['auth'])->name('dashboard'); // QUITAMOS 'verified' PARA EVITAR BLOQUEOS
 
 require __DIR__.'/auth.php';
 
-// RUTAS DE PERFIL
+// RUTAS PERFIL
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -50,17 +55,13 @@ Route::middleware(['auth'])->group(function () {
         if (Auth::user()->rol !== 'admin') return redirect('/dashboard');
         $usuario = User::findOrFail($id);
         $usuario->update(['name' => $request->name, 'email' => $request->email, 'rol' => $request->rol]);
-        
-        // ALERTA DE ÉXITO (Requisito del jurado)
         return redirect('/dashboard')->with('success', 'Usuario actualizado correctamente.');
     })->name('admin.update');
 
     Route::delete('/admin/eliminar/{id}', function ($id) {
         if (Auth::user()->rol !== 'admin') return redirect('/dashboard');
         User::destroy($id);
-        
-        // ALERTA DE ÉXITO
-        return back()->with('success', 'Usuario eliminado del sistema.');
+        return back()->with('success', 'Usuario eliminado.');
     })->name('admin.destroy');
 });
 
@@ -68,11 +69,19 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::post('/medico/registrar-consulta', function (\Illuminate\Http\Request $request) {
         if (Auth::user()->rol !== 'medico') return abort(403);
-        
-        // ... (Tu lógica de guardado sigue aquí) ...
+        $request->validate(['email_paciente' => 'required|exists:users,email']);
+        $paciente = User::where('email', $request->email_paciente)->first();
 
-        // ALERTA DE ÉXITO
-        return back()->with('success', 'Consulta registrada y guardada en historial.');
+        Atencion::create([
+            'paciente_user_id' => $paciente->id,
+            'medico_user_id' => Auth::id(),
+            'diagnostico' => $request->diagnostico,
+            'receta' => $request->receta,
+            'costo_total' => $request->costo,
+            'monto_cubierto' => $request->costo * 0.8,
+            'copago_paciente' => $request->costo * 0.2
+        ]);
+        return back()->with('success', 'Consulta registrada exitosamente.');
     })->name('medico.registrar');
 
     Route::get('/medico/paciente/{id}', function ($id) {
@@ -82,11 +91,15 @@ Route::middleware(['auth'])->group(function () {
     })->name('medico.ver_historial');
 });
 
+// API Y CONTRATO
 Route::get('/api/paciente/{id}', function ($id) {
     return User::with('paciente', 'polizas')->find($id);
 });
 
-// RUTA DE CONTRATO (Accesible para todos los logueados)
+// RUTA FALTANTE DEL CONTRATO
 Route::get('/contrato', function () {
-    return view('contract');
+    $user = Auth::user();
+    $paciente = $user->paciente; // Asumiendo relación
+    $poliza = $user->polizas->first(); // Asumiendo relación
+    return view('contract', compact('user', 'paciente', 'poliza'));
 })->middleware(['auth'])->name('contrato.ver');

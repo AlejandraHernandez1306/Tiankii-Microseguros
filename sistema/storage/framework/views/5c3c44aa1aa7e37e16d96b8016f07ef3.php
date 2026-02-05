@@ -26,24 +26,29 @@
                 </header>
             <?php endif; ?>
 
-            <main>
+            
+                <main>
                 <?php if(session('success')): ?>
+                    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4 animate-bounce">
+                        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 shadow rounded flex justify-between items-center">
+                            <div>
+                                <strong class="font-bold">¡Excelente!</strong>
+                                <span class="block sm:inline"><?php echo e(session('success')); ?></span>
+                            </div>
+                            <span>✅</span>
+                        </div>
+                    </div>
+                <?php endif; ?>
+                
+                <?php if(session('error')): ?>
                     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4">
-                        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 shadow rounded" role="alert">
-                            <p class="font-bold">¡Operación Exitosa!</p>
-                            <p><?php echo e(session('success')); ?></p>
+                        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 shadow rounded">
+                            <strong class="font-bold">Error:</strong>
+                            <span class="block sm:inline"><?php echo e(session('error')); ?></span>
                         </div>
                     </div>
                 <?php endif; ?>
 
-                <?php if(session('error')): ?>
-                    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4">
-                        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 shadow rounded" role="alert">
-                            <p class="font-bold">Error</p>
-                            <p><?php echo e(session('error')); ?></p>
-                        </div>
-                    </div>
-                <?php endif; ?>
                 <?php echo e($slot); ?>
 
             </main>
