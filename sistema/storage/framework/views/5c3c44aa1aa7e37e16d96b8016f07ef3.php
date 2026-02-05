@@ -4,14 +4,11 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
-
         <title><?php echo e(config('app.name', 'Tiankii')); ?></title>
-
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-        <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
         <script src="https://cdn.tailwindcss.com"></script>
+        <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">
@@ -26,25 +23,24 @@
                 </header>
             <?php endif; ?>
 
-            
-                <main>
+            <main>
                 <?php if(session('success')): ?>
-                    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4 animate-bounce">
-                        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 shadow rounded flex justify-between items-center">
-                            <div>
-                                <strong class="font-bold">¡Excelente!</strong>
-                                <span class="block sm:inline"><?php echo e(session('success')); ?></span>
+                    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-6" id="alert-success">
+                        <div class="bg-green-50 border-l-4 border-green-500 p-4 shadow-sm flex justify-between items-center rounded-r">
+                            <div class="flex items-center">
+                                <span class="text-green-500 text-xl mr-2">✓</span>
+                                <p class="text-green-700 font-bold"><?php echo e(session('success')); ?></p>
                             </div>
-                            <span>✅</span>
+                            <button onclick="document.getElementById('alert-success').style.display='none'" class="text-green-700 font-bold hover:text-green-900">×</button>
                         </div>
                     </div>
                 <?php endif; ?>
                 
                 <?php if(session('error')): ?>
-                    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4">
-                        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 shadow rounded">
-                            <strong class="font-bold">Error:</strong>
-                            <span class="block sm:inline"><?php echo e(session('error')); ?></span>
+                    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-6">
+                        <div class="bg-red-50 border-l-4 border-red-500 p-4 shadow-sm rounded-r">
+                            <p class="text-red-700 font-bold">Error</p>
+                            <p class="text-red-600 text-sm"><?php echo e(session('error')); ?></p>
                         </div>
                     </div>
                 <?php endif; ?>

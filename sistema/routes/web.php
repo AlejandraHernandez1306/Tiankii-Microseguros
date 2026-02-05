@@ -4,35 +4,34 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use App\Models\Atencion; // Asegúrate de que este modelo exista
+use App\Models\Atencion;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-// DASHBOARD INTELIGENTE
+// DASHBOARD CENTRAL (Con lógica de roles y paginación)
 Route::get('/dashboard', function () {
     $user = Auth::user();
     if (!$user) return redirect('/login');
 
     if ($user->rol === 'admin') {
-        // PAGINACIÓN: 10 usuarios por página
-        $users = User::paginate(10); 
+        $users = User::paginate(10); // Paginación Admin
         return view('admin.dashboard', compact('user', 'users')); 
     } 
     elseif ($user->rol === 'medico') {
-        // ESTADÍSTICAS PARA GRÁFICOS (FACTOR WOW)
-        $pacientes = User::where('rol', 'paciente')->paginate(10);
-        $totalPacientes = User::where('rol', 'paciente')->count();
-        $consultasMes = Atencion::where('medico_user_id', $user->id)->count();
-        $ingresos = Atencion::where('medico_user_id', $user->id)->sum('costo_total');
-        
-        return view('medico.dashboard', compact('user', 'pacientes', 'totalPacientes', 'consultasMes', 'ingresos'));
+        $pacientes = User::where('rol', 'paciente')->paginate(10); // Paginación Médico
+        return view('medico.dashboard', compact('user', 'pacientes'));
     } 
     else {
-        return view('dashboard', compact('user'));
+        // PACIENTE: Traemos su historial ordenado
+        $misAtenciones = Atencion::where('paciente_user_id', $user->id)
+                                 ->with('medico')
+                                 ->latest()
+                                 ->get();
+        return view('dashboard', compact('user', 'misAtenciones'));
     }
-})->middleware(['auth'])->name('dashboard'); // QUITAMOS 'verified' PARA EVITAR BLOQUEOS
+})->middleware(['auth'])->name('dashboard'); // <--- SIN BLOQUEO VERIFIED
 
 require __DIR__.'/auth.php';
 
@@ -43,7 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// ADMIN
+// RUTAS ADMIN
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/editar/{id}', function ($id) {
         if (Auth::user()->rol !== 'admin') return redirect('/dashboard');
@@ -65,10 +64,11 @@ Route::middleware(['auth'])->group(function () {
     })->name('admin.destroy');
 });
 
-// MÉDICO
+// RUTAS MÉDICO
 Route::middleware(['auth'])->group(function () {
     Route::post('/medico/registrar-consulta', function (\Illuminate\Http\Request $request) {
         if (Auth::user()->rol !== 'medico') return abort(403);
+        
         $request->validate(['email_paciente' => 'required|exists:users,email']);
         $paciente = User::where('email', $request->email_paciente)->first();
 
@@ -81,7 +81,7 @@ Route::middleware(['auth'])->group(function () {
             'monto_cubierto' => $request->costo * 0.8,
             'copago_paciente' => $request->costo * 0.2
         ]);
-        return back()->with('success', 'Consulta registrada exitosamente.');
+        return back()->with('success', 'Consulta y Receta guardadas con éxito.');
     })->name('medico.registrar');
 
     Route::get('/medico/paciente/{id}', function ($id) {
@@ -91,15 +91,13 @@ Route::middleware(['auth'])->group(function () {
     })->name('medico.ver_historial');
 });
 
-// API Y CONTRATO
-Route::get('/api/paciente/{id}', function ($id) {
-    return User::with('paciente', 'polizas')->find($id);
-});
-
-// RUTA FALTANTE DEL CONTRATO
+// RUTAS DE DOCUMENTOS (PDFs y Contratos)
 Route::get('/contrato', function () {
-    $user = Auth::user();
-    $paciente = $user->paciente; // Asumiendo relación
-    $poliza = $user->polizas->first(); // Asumiendo relación
-    return view('contract', compact('user', 'paciente', 'poliza'));
+    return view('contract');
 })->middleware(['auth'])->name('contrato.ver');
+
+Route::get('/receta/{id}', function ($id) {
+    $atencion = Atencion::with(['medico', 'paciente'])->findOrFail($id);
+    if(Auth::id() !== $atencion->paciente_user_id && Auth::user()->rol !== 'medico') abort(403);
+    return view('receta_pdf', compact('atencion'));
+})->middleware(['auth'])->name('receta.imprimir');

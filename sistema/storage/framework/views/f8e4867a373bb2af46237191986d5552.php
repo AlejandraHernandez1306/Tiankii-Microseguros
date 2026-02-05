@@ -14,7 +14,7 @@
             <div class="bg-gradient-to-r from-blue-900 to-blue-700 rounded-lg shadow-xl p-6 mb-8 text-white flex justify-between items-center">
                 <div>
                     <h1 class="text-3xl font-bold">Hola, <?php echo e(Auth::user()->name); ?></h1>
-                    <p class="opacity-90">Tu salud está en buenas manos.</p>
+                    <p class="opacity-90">Bienvenido a tu Portal de Salud Tiankii.</p>
                 </div>
                 <div class="text-right hidden sm:block">
                     <p class="text-sm opacity-75">Estado de Póliza</p>
@@ -22,54 +22,77 @@
                 </div>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-8">
+            <div class="grid md:grid-cols-3 gap-8">
                 
-                <div class="bg-white p-6 rounded-lg shadow-lg border-t-4 border-blue-600">
-                    <h3 class="font-bold text-gray-800 text-lg mb-4">💳 Credencial Digital</h3>
-                    
-                    <div class="bg-gray-800 rounded-xl p-6 text-white shadow-2xl relative overflow-hidden">
-                        <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full"></div>
-                        
-                        <div class="flex justify-between items-start mb-6">
-                            <span class="font-bold tracking-widest text-lg">TIANKII</span>
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TIANKII-<?php echo e(Auth::user()->id); ?>" alt="QR" class="w-16 h-16 bg-white p-1 rounded">
-                        </div>
-                        
-                        <div class="mb-4">
-                            <p class="text-xs opacity-75 uppercase">Asegurado</p>
-                            <p class="font-bold text-xl tracking-wide"><?php echo e(strtoupper(Auth::user()->name)); ?></p>
-                        </div>
-                        
-                        <div class="flex justify-between text-sm">
-                            <div>
-                                <p class="opacity-75 text-xs">Plan</p>
-                                <p class="font-bold"><?php echo e(Auth::user()->polizas->first()->nombre_plan ?? 'N/A'); ?></p>
+                <div class="md:col-span-1 space-y-6">
+                    <div class="bg-white p-6 rounded-lg shadow-lg border-t-4 border-blue-600">
+                        <h3 class="font-bold text-gray-800 text-lg mb-4">💳 Credencial Digital</h3>
+                        <div class="bg-gray-800 rounded-xl p-6 text-white shadow-2xl relative overflow-hidden">
+                            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full"></div>
+                            <div class="flex justify-between items-start mb-6">
+                                <span class="font-bold tracking-widest text-lg">TIANKII</span>
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TIANKII-<?php echo e(Auth::user()->id); ?>" alt="QR" class="w-14 h-14 bg-white p-1 rounded">
                             </div>
-                            <div>
-                                <p class="opacity-75 text-xs">Cobertura</p>
-                                <p class="font-bold">$<?php echo e(number_format(Auth::user()->polizas->first()->cobertura ?? 0, 2)); ?></p>
+                            <div class="mb-4">
+                                <p class="text-xs opacity-75 uppercase">Asegurado</p>
+                                <p class="font-bold text-lg tracking-wide truncate"><?php echo e(strtoupper(Auth::user()->name)); ?></p>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <div>
+                                    <p class="opacity-75 text-xs">Plan</p>
+                                    <p class="font-bold"><?php echo e(Auth::user()->polizas->first()->nombre_plan ?? 'N/A'); ?></p>
+                                </div>
                             </div>
                         </div>
                     </div>
+
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <a href="<?php echo e(route('contrato.ver')); ?>" target="_blank" class="flex items-center justify-between text-blue-800 font-bold hover:text-blue-600">
+                            <span>📄 Descargar Contrato</span>
+                            <span>→</span>
+                        </a>
+                    </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-lg shadow-lg">
-                    <h3 class="font-bold text-gray-800 text-lg mb-4">Gestiones</h3>
-                    <ul class="space-y-4">
-                        <li class="flex items-center justify-between p-4 bg-gray-50 rounded hover:bg-gray-100 transition border hover:border-blue-300 cursor-pointer">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl">📄</span>
-                                <div>
-                                    <p class="font-bold text-gray-800">Contrato de Adhesión</p>
-                                    <p class="text-xs text-gray-500">Descargar PDF firmado</p>
+                <div class="md:col-span-2">
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                        <div class="p-6 border-b border-gray-100 bg-gray-50">
+                            <h3 class="font-bold text-gray-800 text-xl">🩺 Mi Historial Médico</h3>
+                            <p class="text-sm text-gray-500">Consultas y recetas recientes</p>
+                        </div>
+
+                        <?php if($misAtenciones->count() > 0): ?>
+                            <div class="divide-y divide-gray-100">
+                                <?php $__currentLoopData = $misAtenciones; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $atencion): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <div class="p-6 hover:bg-gray-50 transition">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div>
+                                            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded mb-2 inline-block">CONSULTA GENERAL</span>
+                                            <h4 class="font-bold text-gray-800"><?php echo e($atencion->diagnostico); ?></h4>
+                                        </div>
+                                        <span class="text-sm text-gray-500"><?php echo e($atencion->created_at->format('d M, Y')); ?></span>
+                                    </div>
+                                    
+                                    <p class="text-sm text-gray-600 mb-4">
+                                        <span class="font-bold">Dr. Tratante:</span> <?php echo e($atencion->medico->name ?? 'Staff Médico'); ?>
+
+                                    </p>
+
+                                    <a href="<?php echo e(route('receta.imprimir', $atencion->id)); ?>" target="_blank" class="inline-flex items-center gap-2 text-sm font-bold text-teal-600 hover:text-teal-800 border border-teal-200 bg-teal-50 px-3 py-2 rounded">
+                                        💊 Ver Receta Médica
+                                    </a>
                                 </div>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </div>
-                            <a href="<?php echo e(route('contrato.ver')); ?>" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 text-sm">
-                                DESCARGAR
-                            </a>
-                        </li>
-                    </ul>
+                        <?php else: ?>
+                            <div class="p-12 text-center text-gray-500">
+                                <p class="text-4xl mb-2">📋</p>
+                                <p>Aún no tienes consultas registradas.</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
