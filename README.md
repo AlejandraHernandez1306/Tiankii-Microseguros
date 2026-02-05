@@ -3,13 +3,12 @@ GUÍA DE INSTALACIÓN RÁPIDA - PROYECTO TIANKII (Laravel Herd + SQLite)
 ==============================================================================
 
 IMPORTANTE: Este proyecto utiliza Laravel Herd y SQLite.
-Sigue estos pasos AL PIE DE LA LETRA para evitar errores de "Table not found" o "Vite manifest not found".
 
 ------------------------------------------------------------------------------
 PASO 1: PREPARAR EL PROYECTO
 ------------------------------------------------------------------------------
 1. Clona el repositorio.
-2. Abre la terminal y ENTRA a la carpeta del sistema (¡Vital!):
+2. Abre la terminal y entra a la carpeta del sistema:
    cd sistema
 
 3. Instala las dependencias de PHP y Node.js:
@@ -21,9 +20,8 @@ PASO 2: CONFIGURACIÓN DE ENTORNO (Laravel Herd)
 ------------------------------------------------------------------------------
 1. Crea tu archivo de configuración:
    (Windows): copy .env.example .env
-   (Mac/Linux): cp .env.example .env
 
-2. Abre el archivo .env y configura la base de datos ASÍ (borra lo demás de DB_):
+2. Abre el archivo .env y configura la base de datos (borra lo demás de DB_):
    
    DB_CONNECTION=sqlite
    # DB_HOST=127.0.0.1
@@ -56,7 +54,7 @@ Como no usamos MySQL, debes crear el archivo de base de datos manualmente.
    (Si sale todo en verde, ya funcionó. Si falla, revisa el paso 1).
 
 ------------------------------------------------------------------------------
-PASO 4: ESTILOS VISUALES (Para que no se vea feo)
+PASO 4: ESTILOS VISUALES 
 ------------------------------------------------------------------------------
 Para que los botones tengan color y el diseño funcione:
 
@@ -65,7 +63,7 @@ Para que los botones tengan color y el diseño funcione:
 ------------------------------------------------------------------------------
 PASO 5: INICIAR
 ------------------------------------------------------------------------------
-Si usas Laravel Herd, el sitio ya debería estar visible (ej. http://sistema.test).
+Si usas Laravel Herd, el sitio ya debería estar visible.
 Si no te carga, usa el servidor manual:
 
    php artisan serve
