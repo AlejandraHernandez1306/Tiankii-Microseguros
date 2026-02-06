@@ -49,14 +49,15 @@ return new class extends Migration
 
         // 4. PÓLIZAS (Seguro)
         Schema::create('polizas', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->string('nombre_plan');
-            $table->decimal('costo', 10, 2);
-            $table->decimal('cobertura', 10, 2);
-            $table->string('estado')->default('activa');
-            $table->timestamps();
-        });
+    $table->id();
+    $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+    $table->string('nombre_plan');
+    $table->decimal('costo', 10, 2);
+    $table->decimal('cobertura', 10, 2);
+    $table->string('metodo_pago')->default('Tarjeta de Crédito'); // <--- AGREGAR ESTO
+    $table->string('estado')->default('activa');
+    $table->timestamps();
+});
 
         // 5. ATENCIONES MÉDICAS (Consultas) - ¡ESTA ERA LA QUE FALTABA!
         Schema::create('atenciones_medicas', function (Blueprint $table) {
