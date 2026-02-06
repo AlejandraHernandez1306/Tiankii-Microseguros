@@ -11,27 +11,36 @@ Route::get('/', function () {
 });
 
 // DASHBOARD CENTRAL (Con lógica de roles y paginación)
+// ... (mismo inicio de archivo)
+
 Route::get('/dashboard', function () {
     $user = Auth::user();
     if (!$user) return redirect('/login');
 
     if ($user->rol === 'admin') {
-        $users = User::paginate(10); // Paginación Admin
+        $users = User::paginate(10);
         return view('admin.dashboard', compact('user', 'users')); 
     } 
     elseif ($user->rol === 'medico') {
-        $pacientes = User::where('rol', 'paciente')->paginate(10); // Paginación Médico
-        return view('medico.dashboard', compact('user', 'pacientes'));
+        // PAGINACIÓN Y ESTADÍSTICAS CALCULADAS
+        $pacientes = User::where('rol', 'paciente')->paginate(10);
+        
+        $totalPacientes = User::where('rol', 'paciente')->count();
+        $consultasMes = Atencion::where('medico_user_id', $user->id)->count();
+        $ingresos = Atencion::where('medico_user_id', $user->id)->sum('costo_total');
+        
+        return view('medico.dashboard', compact('user', 'pacientes', 'totalPacientes', 'consultasMes', 'ingresos'));
     } 
     else {
-        // PACIENTE: Traemos su historial ordenado
         $misAtenciones = Atencion::where('paciente_user_id', $user->id)
                                  ->with('medico')
                                  ->latest()
                                  ->get();
         return view('dashboard', compact('user', 'misAtenciones'));
     }
-})->middleware(['auth'])->name('dashboard'); // <--- SIN BLOQUEO VERIFIED
+})->middleware(['auth'])->name('dashboard');
+
+// ... (resto de rutas iguales) // <--- SIN BLOQUEO VERIFIED
 
 require __DIR__.'/auth.php';
 

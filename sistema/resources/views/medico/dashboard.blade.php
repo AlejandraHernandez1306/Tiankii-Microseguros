@@ -1,88 +1,82 @@
 <x-app-layout>
-    <div class="py-12">
+    <div class="py-12 bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white p-4 rounded shadow border-l-4 border-teal-500">
-                    <p class="text-gray-500 text-sm">Pacientes Totales</p>
-                    <p class="text-2xl font-bold">{{ \App\Models\User::where('rol', 'paciente')->count() }}</p>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-teal-100">
+                    <div class="text-teal-500 text-3xl mb-2">👥</div>
+                    <p class="text-gray-400 text-xs font-bold uppercase tracking-widest">Pacientes</p>
+                    <p class="text-3xl font-black text-gray-800">{{ $totalPacientes }}</p>
                 </div>
-                <div class="bg-white p-4 rounded shadow border-l-4 border-blue-500">
-                    <p class="text-gray-500 text-sm">Consultas Realizadas</p>
-                    <p class="text-2xl font-bold">{{ \App\Models\Atencion::where('medico_user_id', Auth::id())->count() }}</p>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-100">
+                    <div class="text-blue-500 text-3xl mb-2">📋</div>
+                    <p class="text-gray-400 text-xs font-bold uppercase tracking-widest">Consultas</p>
+                    <p class="text-3xl font-black text-gray-800">{{ $consultasMes }}</p>
                 </div>
-                <div class="bg-white p-4 rounded shadow border-l-4 border-purple-500">
-                    <p class="text-gray-500 text-sm">Ingresos del Mes</p>
-                    <p class="text-2xl font-bold">${{ \App\Models\Atencion::where('medico_user_id', Auth::id())->sum('costo_total') }}</p>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100">
+                    <div class="text-emerald-500 text-3xl mb-2">💰</div>
+                    <p class="text-gray-400 text-xs font-bold uppercase tracking-widest">Ingresos</p>
+                    <p class="text-3xl font-black text-gray-800">${{ number_format($ingresos, 2) }}</p>
                 </div>
-                <div class="bg-white p-4 rounded shadow border-l-4 border-green-500">
-                    <p class="text-gray-500 text-sm">Estado del Sistema</p>
-                    <p class="text-lg font-bold text-green-600">En Línea ●</p>
+                <div class="bg-teal-600 p-6 rounded-2xl shadow-lg text-white">
+                    <div class="text-3xl mb-2">🏥</div>
+                    <p class="text-teal-100 text-xs font-bold uppercase tracking-widest">Estado</p>
+                    <p class="text-xl font-bold">Servicio Activo</p>
                 </div>
             </div>
 
-            <div class="grid md:grid-cols-3 gap-6">
-                <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-md border border-gray-100">
-                    <h3 class="font-bold text-lg mb-4 text-teal-800 border-b pb-2 flex items-center gap-2">
-                        <span>📝</span> Registrar Nueva Consulta
-                    </h3>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="md:col-span-2 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="bg-teal-100 text-teal-600 p-2 rounded-lg">✍️</div>
+                        <h3 class="font-black text-2xl text-gray-800 tracking-tight">Nueva Consulta Médica</h3>
+                    </div>
                     
                     <form action="{{ route('medico.registrar') }}" method="POST">
                         @csrf
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div class="col-span-2">
-                                <label class="text-sm font-bold text-gray-700">Paciente (Email)</label>
-                                <input type="email" name="email_paciente" class="w-full border-gray-300 rounded focus:ring-teal-500" required placeholder="ejemplo@tiankii.com">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Correo del Paciente</label>
+                                <input type="email" name="email_paciente" class="w-full border-gray-200 rounded-xl bg-gray-50 focus:ring-teal-500" required placeholder="paciente@tiankii.com">
                             </div>
                             <div>
-                                <label class="text-sm font-bold text-gray-700">Costo Total ($)</label>
-                                <input type="number" step="0.01" name="costo" class="w-full border-gray-300 rounded" required>
-                            </div>
-                            <div>
-                                <label class="text-sm font-bold text-gray-700">Fecha</label>
-                                <input type="text" value="{{ date('Y-m-d') }}" disabled class="w-full bg-gray-100 border-gray-300 rounded text-gray-500">
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Honorarios ($)</label>
+                                <input type="number" step="0.01" name="costo" class="w-full border-gray-200 rounded-xl bg-gray-50 focus:ring-teal-500" required>
                             </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label class="text-sm font-bold text-gray-700">Diagnóstico Médico</label>
-                            <textarea name="diagnostico" class="w-full border-gray-300 rounded h-24" required placeholder="Describe los síntomas y el diagnóstico..."></textarea>
+                        <div class="mb-6">
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Diagnóstico Detallado</label>
+                            <textarea name="diagnostico" class="w-full border-gray-200 rounded-xl bg-gray-50 h-32" required></textarea>
                         </div>
 
-                        <div class="mb-4">
-                            <label class="text-sm font-bold text-gray-700">Receta / Tratamiento</label>
-                            <textarea name="receta" class="w-full border-gray-300 rounded h-20" placeholder="Medicamentos recetados..."></textarea>
+                        <div class="mb-8">
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Receta / Tratamiento</label>
+                            <textarea name="receta" class="w-full border-gray-200 rounded-xl bg-gray-50 h-24" placeholder="Ej: Acetaminofén 500mg cada 8 horas..."></textarea>
                         </div>
                         
-                        <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded font-bold shadow-lg transition transform hover:scale-105">
+                        <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white py-4 rounded-2xl font-black shadow-xl shadow-teal-100 transition-all transform hover:scale-[1.02]">
                             GUARDAR Y GENERAR EXPEDIENTE
                         </button>
                     </form>
                 </div>
 
-                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-100 h-fit">
-                    <h3 class="font-bold text-lg mb-4 text-gray-700 border-b pb-2">📂 Directorio</h3>
-                    
-                    @if($pacientes->count() > 0)
-                        <ul class="space-y-3">
-                            @foreach($pacientes as $p)
-                            <li class="flex justify-between items-center p-3 bg-gray-50 rounded hover:bg-teal-50 transition border border-gray-200">
-                                <div class="truncate">
-                                    <p class="font-bold text-gray-800 text-sm">{{ $p->name }}</p>
-                                    <p class="text-xs text-gray-500 truncate">{{ $p->email }}</p>
-                                </div>
-                                <a href="{{ route('medico.ver_historial', $p->id) }}" class="text-white bg-teal-500 hover:bg-teal-600 px-3 py-1 rounded text-xs font-bold shadow-sm">
-                                    Ver
-                                </a>
-                            </li>
-                            @endforeach
-                        </ul>
-                        <div class="mt-4 text-xs">
-                            {{ $pacientes->links() }}
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-gray-800 mb-6 border-b pb-4">📂 Directorio Reciente</h3>
+                    <div class="space-y-4">
+                        @foreach($pacientes as $p)
+                        <div class="p-4 bg-gray-50 rounded-xl flex justify-between items-center hover:bg-teal-50 transition border border-transparent hover:border-teal-100">
+                            <div class="truncate mr-2">
+                                <p class="font-bold text-gray-800 text-sm truncate">{{ $p->name }}</p>
+                                <p class="text-[10px] text-gray-400 uppercase tracking-tighter">{{ $p->email }}</p>
+                            </div>
+                            <a href="{{ route('medico.ver_historial', $p->id) }}" class="bg-white text-teal-600 px-3 py-1 rounded-lg text-[10px] font-black border border-teal-100 shadow-sm">VER</a>
                         </div>
-                    @else
-                        <p class="text-gray-500 text-sm text-center py-4">No hay pacientes registrados.</p>
-                    @endif
+                        @endforeach
+                    </div>
+                    <div class="mt-6">
+                        {{ $pacientes->links() }}
+                    </div>
                 </div>
             </div>
         </div>

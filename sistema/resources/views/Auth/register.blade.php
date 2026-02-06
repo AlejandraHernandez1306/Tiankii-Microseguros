@@ -67,9 +67,9 @@
             <a class="underline text-sm text-gray-600 hover:text-blue-900" href="{{ route('login') }}">
                 ¿Ya tienes cuenta?
             </a>
-            <button type="submit" class="bg-blue-900 text-white px-6 py-2 rounded font-bold hover:bg-blue-800 transition">
-                COMPLETAR REGISTRO
-            </button>
+            <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white py-4 rounded-xl font-black text-lg shadow-xl shadow-blue-200 transition-all block text-center opacity-100 visible">
+    COMPLETAR REGISTRO OFICIAL
+</button>
         </div>
     </form>
 

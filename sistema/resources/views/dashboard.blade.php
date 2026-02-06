@@ -13,6 +13,39 @@
                 </div>
             </div>
 
+            <div class="mb-8 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                <h3 class="font-black text-gray-800 text-lg mb-4 flex items-center gap-2">
+                    <span>💰</span> Estado de mi Seguro
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="p-4 bg-slate-50 rounded-xl border border-gray-100">
+                        <p class="text-xs font-bold text-gray-400 uppercase">Prima Anual Pagada</p>
+                        <p class="text-2xl font-black text-blue-600">
+                            ${{ number_format(Auth::user()->polizas->first()->costo ?? 0, 2) }}
+                        </p>
+                    </div>
+                    <div class="p-4 bg-slate-50 rounded-xl border border-gray-100">
+                        <p class="text-xs font-bold text-gray-400 uppercase">Cobertura Disponible</p>
+                        <p class="text-2xl font-black text-emerald-600">
+                            ${{ number_format(Auth::user()->polizas->first()->cobertura ?? 0, 2) }}
+                        </p>
+                    </div>
+                    <div class="p-4 bg-slate-50 rounded-xl border border-gray-100">
+                        <p class="text-xs font-bold text-gray-400 uppercase">Próximo Pago</p>
+                        <p class="text-sm font-bold text-gray-600">
+                            {{ \Carbon\Carbon::parse(Auth::user()->created_at)->addYear()->format('d/m/Y') }}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                    <p class="text-xs text-blue-700 italic">
+                        * El costo de tu prima fue calculado automáticamente basándose en tu ubicación 
+                        ({{ Auth::user()->paciente->ubicacion_zona ?? 'N/A' }}) y edad actual.
+                    </p>
+                </div>
+            </div>
+
             <div class="grid md:grid-cols-3 gap-8">
                 
                 <div class="md:col-span-1 space-y-6">
@@ -37,16 +70,16 @@
                         </div>
                     </div>
 
-                    <div class="bg-white p-4 rounded-lg shadow">
+                    <div class="bg-white p-4 rounded-lg shadow hover:shadow-md transition">
                         <a href="{{ route('contrato.ver') }}" target="_blank" class="flex items-center justify-between text-blue-800 font-bold hover:text-blue-600">
-                            <span>📄 Descargar Contrato</span>
+                            <span>📄 Descargar Contrato PDF</span>
                             <span>→</span>
                         </a>
                     </div>
                 </div>
 
                 <div class="md:col-span-2">
-                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
                         <div class="p-6 border-b border-gray-100 bg-gray-50">
                             <h3 class="font-bold text-gray-800 text-xl">🩺 Mi Historial Médico</h3>
                             <p class="text-sm text-gray-500">Consultas y recetas recientes</p>
@@ -58,7 +91,7 @@
                                 <div class="p-6 hover:bg-gray-50 transition">
                                     <div class="flex justify-between items-start mb-2">
                                         <div>
-                                            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded mb-2 inline-block">CONSULTA GENERAL</span>
+                                            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded mb-2 inline-block uppercase">Consulta General</span>
                                             <h4 class="font-bold text-gray-800">{{ $atencion->diagnostico }}</h4>
                                         </div>
                                         <span class="text-sm text-gray-500">{{ $atencion->created_at->format('d M, Y') }}</span>
@@ -68,7 +101,7 @@
                                         <span class="font-bold">Dr. Tratante:</span> {{ $atencion->medico->name ?? 'Staff Médico' }}
                                     </p>
 
-                                    <a href="{{ route('receta.imprimir', $atencion->id) }}" target="_blank" class="inline-flex items-center gap-2 text-sm font-bold text-teal-600 hover:text-teal-800 border border-teal-200 bg-teal-50 px-3 py-2 rounded">
+                                    <a href="{{ route('receta.imprimir', $atencion->id) }}" target="_blank" class="inline-flex items-center gap-2 text-sm font-bold text-teal-600 hover:text-teal-800 border border-teal-200 bg-teal-50 px-3 py-2 rounded transition">
                                         💊 Ver Receta Médica
                                     </a>
                                 </div>
@@ -77,7 +110,7 @@
                         @else
                             <div class="p-12 text-center text-gray-500">
                                 <p class="text-4xl mb-2">📋</p>
-                                <p>Aún no tienes consultas registradas.</p>
+                                <p>Aún no tienes consultas registradas en el sistema.</p>
                             </div>
                         @endif
                     </div>
