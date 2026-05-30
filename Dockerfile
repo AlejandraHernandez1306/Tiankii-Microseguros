@@ -15,13 +15,13 @@ WORKDIR /var/www/html
 
 COPY . .
 
-# Forzar la eliminación de cualquier archivo de caché local que se haya colado
+# Eliminar físicamente cualquier archivo de caché local que se haya colado en bootstrap antes de compilar
 RUN rm -f bootstrap/cache/*.php
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --optimize-autoloader
 
-# Crear la estructura de almacenamiento directo y forzar permisos de escritura en Linux
+# Crear la estructura de almacenamiento directo con permisos absolutos en Linux
 RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views bootstrap/cache
 RUN chown -R www-data:www-data storage bootstrap/cache
 RUN chmod -R 775 storage bootstrap/cache
@@ -32,5 +32,5 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.
 
 EXPOSE 80
 
-# Comando de arranque: Limpia la caché interna antes de correr migraciones
-CMD php artisan config:clear && php artisan view:clear && php artisan migrate --force --seed && apache2-foreground
+# Comando de arranque definitivo: Limpia la configuración vieja de Artisan antes de migrar
+CMD php artisan config:clear && php artisan cache:clear && php artisan view:clear && php artisan migrate --force --seed && apache2-foreground
