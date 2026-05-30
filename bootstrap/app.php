@@ -17,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->booting(function () {
-        // Registrar dinámicamente la ruta de la caché en el arranque oficial del contenedor
+        // Forzar dinámicamente la ruta de la caché de las vistas en Render (Entorno de producción)
         if (env('APP_ENV') === 'production' || env('VIEW_COMPILED_PATH')) {
             config(['view.compiled' => env('VIEW_COMPILED_PATH', '/tmp')]);
         }
