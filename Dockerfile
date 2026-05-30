@@ -1,5 +1,5 @@
 # Usamos la imagen oficial de PHP con Apache optimizada para producción
-FROM php:8.2-apache
+FROM php:8.4-apache
 
 # Instalar extensiones del sistema operativo necesarias para PostgreSQL y Laravel
 RUN apt-get update && apt-get install -y \
