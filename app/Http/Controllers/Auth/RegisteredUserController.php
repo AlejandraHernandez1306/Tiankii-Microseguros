@@ -35,7 +35,7 @@ class RegisteredUserController extends Controller
 
         if ($validator->fails()) {
             
-            dd('ERROR DE VALIDACIÓN (Faltan datos):', $validator->errors()->all(), 'DATOS RECIBIDOS:', $request->all());
+            //dd('ERROR DE VALIDACIÓN (Faltan datos):', $validator->errors()->all(), 'DATOS RECIBIDOS:', $request->all());
         }
 
         try {
@@ -90,7 +90,7 @@ class RegisteredUserController extends Controller
 
         } catch (\Exception $e) {
             
-            dd("ERROR CRÍTICO:", $e->getMessage());
+            //dd("ERROR CRÍTICO:", $e->getMessage());
         }
     }
 }
