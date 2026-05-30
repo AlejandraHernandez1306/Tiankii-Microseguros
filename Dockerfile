@@ -24,7 +24,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --optimize-autoloader
 
 # Ajustar los permisos de las carpetas de almacenamiento de Laravel
-RUN chown -r www-data:www-data storage bootstrap/cache
+RUN chown -R www-data:www-data storage bootstrap/cache
 
 # Configurar Apache para que apunte directamente a la carpeta public/ de Laravel
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
