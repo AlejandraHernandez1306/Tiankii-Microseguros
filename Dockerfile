@@ -34,3 +34,6 @@ EXPOSE 80
 
 # Comando de arranque definitivo: Limpia la configuración vieja de Artisan antes de migrar
 CMD php artisan config:clear && php artisan cache:clear && php artisan view:clear && php artisan migrate --force --seed && apache2-foreground
+
+RUN php artisan view:clear
+RUN php artisan cache:clear
