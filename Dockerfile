@@ -21,9 +21,9 @@ RUN rm -f bootstrap/cache/*.php
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --optimize-autoloader
 
-# Crear la estructura de almacenamiento directo con permisos absolutos en Linux
-RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views bootstrap/cache
-RUN chown -R www-data:www-data storage bootstrap/cache
+# >>> CORRECCIÓN CLAVE: Dar permisos de lectura a Apache para todo el proyecto y escritura para storage/bootstrap <<<
+RUN chown -R www-data:www-data /var/www/html
+RUN chmod -R 755 /var/www/html
 RUN chmod -R 775 storage bootstrap/cache
 
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
@@ -32,5 +32,5 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.
 
 EXPOSE 80
 
-# Comando de arranque definitivo (aquí sí se ejecutan con las variables inyectadas)
+# Comando de arranque
 CMD php artisan config:clear && php artisan cache:clear && php artisan view:clear && php artisan migrate --force --seed && apache2-foreground
