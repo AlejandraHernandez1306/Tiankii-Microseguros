@@ -32,8 +32,5 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.
 
 EXPOSE 80
 
-# Comando de arranque definitivo: Limpia la configuración vieja de Artisan antes de migrar
+# Comando de arranque definitivo (aquí sí se ejecutan con las variables inyectadas)
 CMD php artisan config:clear && php artisan cache:clear && php artisan view:clear && php artisan migrate --force --seed && apache2-foreground
-
-RUN php artisan view:clear
-RUN php artisan cache:clear
