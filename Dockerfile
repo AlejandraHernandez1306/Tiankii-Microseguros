@@ -4,7 +4,7 @@ FROM php:8.4-apache
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY --from=mlocati/php-extension-installer:latest /usr/bin/install-php-extensions /usr/bin/
 
-# Instalar todas las extensiones de Laravel de forma limpia y segura
+# Instalar extensiones de Laravel
 RUN install-php-extensions pdo_pgsql pgsql zip bcmath mbstring xml
 
 RUN a2enmod rewrite
@@ -16,8 +16,8 @@ COPY . .
 # Limpiar caché previa de bootstrap
 RUN rm -f bootstrap/cache/*.php
 
-# Instalar dependencias de Composer
-RUN composer install --no-dev --optimize-autoloader
+# Instalar dependencias sin ejecutar scripts automáticos que rompen el build
+RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 # Configurar permisos para Apache
 RUN chown -R www-data:www-data /var/www/html \
@@ -30,5 +30,5 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
 
 EXPOSE 80
 
-# Comando de arranque final
+# Comando de arranque final (aquí sí corre todo con las variables listas)
 CMD php artisan config:clear && php artisan cache:clear && php artisan view:clear && php artisan migrate --force --seed && apache2-foreground
